@@ -1,0 +1,127 @@
+<!--
+  - The MIT License
+  -
+  - Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
+  - Thomas Maurel, Romain Seguy, Timothy Bingaman
+  -
+  - Parts:
+  -   Slave ownership: Oleg Nenashev <nenashev@synopsys.com>, Synopsys Inc.
+  -
+  - Permission is hereby granted, free of charge, to any person obtaining a copy
+  - of this software and associated documentation files (the "Software"), to deal
+  - in the Software without restriction, including without limitation the rights
+  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  - copies of the Software, and to permit persons to whom the Software is
+  - furnished to do so, subject to the following conditions:
+  -
+  - The above copyright notice and this permission notice shall be included in
+  - all copies or substantial portions of the Software.
+  -
+  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  - THE SOFTWARE.
+  -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" 
+          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+    <l:layout permission="${app.ADMINISTER}" norefresh="true">
+        <st:include it="${app}" page="sidepanel.jelly"/>
+        <l:main-panel>
+          <link rel="stylesheet" href="${rootURL}${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
+          <link rel="stylesheet" href="${rootURL}/plugin/role-strategy/css/role-strategy.css" type="text/css" />
+          <script type="text/javascript" src="${rootURL}/plugin/role-strategy/js/table.js" />
+          <script type="text/javascript">
+            jQuery.browser = {};
+            (function () {
+                jQuery.browser.msie = false;
+                jQuery.browser.version = 0;
+                if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
+                    jQuery.browser.msie = true;
+                    jQuery.browser.version = RegExp.$1;
+                }
+            })();
+
+            jQuery.curCSS = function(element, prop, val) {
+              return jQuery(element).css(prop, val);
+            };
+          </script>
+
+          <j:set var="globalGroups" value="${it.strategy.descriptor.getGroups(it.strategy.GLOBAL)}"/>
+          <j:set var="projectGroups" value="${it.strategy.descriptor.getGroups(it.strategy.PROJECT)}"/>
+          <j:set var="slaveGroups" value="${it.strategy.descriptor.getGroups(it.strategy.SLAVE)}"/>
+
+          <d:taglib uri="local">
+            <d:tag name="roleRow">
+              <td class="start">
+                <a href="#">
+                  <img alt="remove" src="${imagesURL}/16x16/stop.gif"/>
+                </a>
+              </td>
+              <td class="left-most">${title}</td>
+              <j:if test="${!attrs.global}">
+                <td width="*" class="in-place-edit">
+                  <j:if test="${attrs.project}">
+                    <a href="#" class="patternAnchor">&quot;${h.escape(attrs.role.pattern.toString())}&quot;</a>
+                  </j:if>
+                  <j:if test="${!attrs.project}">
+                    &quot;${h.escape(attrs.role.pattern.toString())}&quot;
+                  </j:if>
+                  <input type="hidden" name="[pattern]" value="${attrs.role.pattern}" />
+                </td>
+              </j:if>
+                                   
+              <j:set var="tableItems" value="${it.strategy.descriptor.getGroups(attrs.type)}"/>
+              <j:forEach var="g" items="${tableItems}">
+                <j:forEach var="p" items="${g.permissions}">
+                  <j:if test="${it.strategy.descriptor.showPermission(attrs.type, p, attrs.showDangerous)}">
+                    <td width="*">                   
+                      <f:checkbox name="[${p.id}]" checked="${attrs.role.hasPermission(p)}"/>
+                    </td>
+                  </j:if>
+                </j:forEach>
+              </j:forEach>
+              <td class="stop">
+                <a href="#">
+                  <img alt="remove" src="${imagesURL}/16x16/stop.gif"/>
+                </a>
+              </td>
+            </d:tag>
+          </d:taglib>
+
+          <f:form method="post" name="config" action="rolesSubmit">
+            <h1>
+              <img src="${imagesURL}/48x48/fingerprint.gif" alt="${it.displayName}" />
+              ${it.manageRolesName}
+            </h1>
+
+            <j:set var="hasDangerous" value="${it.strategy.descriptor.hasDangerousPermissions()}"/>
+
+            <f:section title="${%Global roles}">
+              <f:rowSet name="globalRoles">
+                <f:block><st:include page="manage-global-roles.jelly" optional="true" /></f:block>
+              </f:rowSet>
+            </f:section>
+            <f:section title="${%Project roles}">
+              <f:rowSet name="projectRoles">
+                <f:block><st:include page="manage-project-roles.jelly" optional="true" /></f:block>
+              </f:rowSet>
+            </f:section>
+            <f:section title="${%Slave roles}">
+              <f:rowSet name="slaveRoles">
+                <f:block><st:include page="manage-slave-roles.jelly" 
+                                    optional="true" />
+                </f:block>
+              </f:rowSet>
+            </f:section>
+            <f:block>
+              <f:submit value="${%Save}" />
+              <f:apply />
+            </f:block>
+          </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
