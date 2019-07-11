@@ -41,12 +41,12 @@ const addFolderRole = () => {
         folderNames: document.getElementById('folder-select').getValue(),
     };
 
-    if (response.permissions.length <= 0) {
+    if (!response.permissions || response.permissions.length <= 0) {
         alert('Please select at least one permission');
         return;
     }
 
-    if (response.folderNames.length <= 0) {
+    if (!response.folderNames || response.folderNames.length <= 0) {
         alert('Please select at least one folder on which this role will be applicable');
         return;
     }
