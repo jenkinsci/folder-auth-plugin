@@ -12,6 +12,15 @@
     <packaging>hpi</packaging>
     <version>${revision}${changelist}</version>
     <name>Folder-based Authorization Strategy</name>
+    <description>Manage access to Folders</description>
+
+    <developers>
+        <developer>
+            <id>AbhyudayaSharma</id>
+            <name>Abhyudaya Sharma</name>
+            <email>sharmaabhyudaya@gmail.com</email>
+        </developer>
+    </developers>
 
     <properties>
         <revision>0.01</revision>
