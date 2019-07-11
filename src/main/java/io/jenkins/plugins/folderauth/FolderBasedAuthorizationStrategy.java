@@ -384,7 +384,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         @Nonnull
         @Override
         public String getDisplayName() {
-            return "Folder Authorization strategy";
+            return Messages.FolderBasedAuthorizationStrategy_DisplayName();
         }
     }
 }

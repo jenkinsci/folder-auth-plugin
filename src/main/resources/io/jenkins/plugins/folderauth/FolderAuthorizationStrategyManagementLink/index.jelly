@@ -1,25 +1,25 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout permission="${app.ADMINISTER}" norefresh="true" title="Folder Authorization">
+    <l:layout permission="${app.ADMINISTER}" norefresh="true" title="${%title}">
         <st:include it="${app}" page="sidepanel.jelly" optional="true"/>
         <l:main-panel>
             <script src="${rootURL}/plugin/folder-auth/js/globalrole.js"/>
             <link rel="stylesheet" href="${rootURL}/plugin/folder-auth/css/folder-strategy.css" type="text/css"/>
             <div>
-                <h1>Manage Global Roles</h1>
+                <h1>${%manageGlobalRoles}</h1>
                 <h2>
-                    Current Global roles
+                    ${%currentGlobalRoles}
                 </h2>
                 <div class="role-container">
                     <j:forEach items="${it.globalRoles}" var="globalRole" indexVar="index">
                         <div class="role">
-                            Name: ${globalRole.name}
+                            ${%name}: ${globalRole.name}
                             <br/>
-                            Sids: ${globalRole.getSidsCommaSeparated()}
+                            ${%sids}: ${globalRole.getSidsCommaSeparated()}
                             <form action="${rootURL}/${it.urlName}/assignSidToGlobalRole" method="POST">
                                 <div class="form-row">
                                     <label for="assign-sid-global-${index}" style="margin-right: 10px;">
-                                        Assign Sid
+                                        ${%assignSid}
                                     </label>
                                     <input id="assign-sid-global-${index}" type="text" name="sid"/>
                                     <input type="hidden" value="${globalRole.name}" name="roleName"/>
@@ -27,7 +27,7 @@
                                 </div>
                             </form>
                             <br/>
-                            <button class="collapsible">View Permissions</button>
+                            <button class="collapsible">${%viewPermissions}</button>
                             <div class="collapsible-content">
                                 <ul>
                                     <j:forEach items="${globalRole.permissions}" var="wrapper">
@@ -37,7 +37,7 @@
                             </div>
                             <hr/>
                             <form method="POST" action="${rootURL}/${it.urlName}/deleteGlobalRole"
-                                  onsubmit="return confirm('Do you want to delete this role?');">
+                                  onsubmit="return confirm('${%confirmDelete}');">
                                 <input type="hidden" name="roleName" value="${globalRole.name}"/>
                                 <input type="submit" value="X" class="delete-role"/>
                             </form>
@@ -45,16 +45,17 @@
                     </j:forEach>
                 </div>
                 <h2>
-                    Add a global role
+                    ${%addGlobalRole}
                 </h2>
                 <div>
                     <div class="form-row">
-                        <label class="form-label">Name of the role
+                        <label class="form-label">
+                            ${%roleName}
                             <input id="globalRoleName" name="roleName" type="text" minlength="3"/>
                         </label>
                     </div>
                     <div class="form-label">
-                        Permissions
+                        ${%permissions}
                     </div>
                     <label class="form-label">
                         <select multiple="multiple" name="permissions" id="global-permission-select">
@@ -66,7 +67,7 @@
                         </select>
                     </label>
                     <button type="button" onclick="addGlobalRole();" class="submit-button">
-                        Add Role
+                        ${%addRole}
                     </button>
                 </div>
             </div>
@@ -75,31 +76,31 @@
 
             <div style="margin-top: 20px;">
                 <h1>
-                    Manage Folder Roles
+                    ${%manageFolderRoles}
                 </h1>
                 <h2>
-                    Current Folder Roles
+                    ${%currentFolderRoles}
                 </h2>
                 <div class="role-container">
                     <j:forEach items="${it.folderRoles}" var="folderRole" indexVar="index">
                         <div class="role">
-                            Name: ${folderRole.name}
+                            ${%name}: ${folderRole.name}
                             <br/>
-                            Sids: ${folderRole.getSidsCommaSeparated()}
+                            ${%sids}: ${folderRole.getSidsCommaSeparated()}
                             <br/>
-                            Folders: ${folderRole.getFolderNamesCommaSeparated()}
+                            ${%folders}: ${folderRole.getFolderNamesCommaSeparated()}
                             <br/>
                             <form action="${rootURL}/${it.urlName}/assignSidToFolderRole" method="POST">
                                 <div class="form-row">
                                     <label for="assign-sid-folder-${index}" style="margin-right: 10px;">
-                                        Assign Sid
+                                        ${assignSid}
                                     </label>
                                     <input id="assign-sid-folder-${index}" type="text" name="sid"/>
                                     <input type="hidden" value="${folderRole.name}" name="roleName"/>
                                     <input type="submit" style="margin-left: 10px;"/>
                                 </div>
                             </form>
-                            <button class="collapsible">View Permissions</button>
+                            <button class="collapsible">${%viewPermissions}</button>
                             <div class="collapsible-content">
                                 <ul>
                                     <j:forEach items="${folderRole.permissions}" var="wrapper">
@@ -109,7 +110,7 @@
                             </div>
                             <hr/>
                             <form method="POST" action="${rootURL}/${it.urlName}/deleteFolderRole"
-                                  onsubmit="return confirm('Do you want to delete this role?');">
+                                  onsubmit="return confirm('${%confirmDelete}');">
                                 <input type="hidden" name="roleName" value="${folderRole.name}"/>
                                 <input type="submit" value="X" class="delete-role"/>
                             </form>
@@ -117,17 +118,19 @@
                     </j:forEach>
                 </div>
 
-                <h2>Add a folder role</h2>
+                <h2>
+                    ${%addFolderRole}
+                </h2>
                 <div>
                     <div class="form-row">
                         <label class="form-label">
-                            Name of the Role:
+                            ${%roleName}:
                             <input type="text" id="folderRoleName" name="roleName" minlength="3"/>
                         </label>
                     </div>
                     <div class="form-row">
                         <label class="form-label">
-                            Apply on:
+                            ${%applyOn}:
                             <select name="folderNames" multiple="multiple" id="folder-select" class="form-control">
                                 <j:forEach items="${it.allFolders}" var="folder">
                                     <option value="${folder.fullName}">${folder.fullName}</option>
@@ -136,7 +139,7 @@
                         </label>
                     </div>
                     <label class="form-label">
-                        Permissions
+                        ${%permissions}
                         <select multiple="multiple" name="permissions" id="folder-permission-select">
                             <j:forEach items="${it.getFolderPermissions()}" var="perm">
                                 <option value="${perm.id}">${perm.group.title} | ${perm.name}</option>
@@ -144,7 +147,7 @@
                         </select>
                     </label>
                     <div class="form-row">
-                        <button type="button" class="submit-button" onclick="addFolderRole();">Add Role</button>
+                        <button type="button" class="submit-button" onclick="addFolderRole();">${%addRole}</button>
                     </div>
                 </div>
             </div>

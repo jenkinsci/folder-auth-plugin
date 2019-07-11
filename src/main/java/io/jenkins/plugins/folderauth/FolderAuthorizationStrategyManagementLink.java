@@ -52,7 +52,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @CheckForNull
     @Override
     public String getDisplayName() {
-        return "Folder Authorization Strategy";
+        return Messages.FolderBasedAuthorizationStrategy_DisplayName();
     }
 
     @Nonnull
@@ -89,7 +89,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             ((FolderBasedAuthorizationStrategy) strategy).addGlobalRole(request.getGlobalRole());
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 
@@ -116,7 +116,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             ((FolderBasedAuthorizationStrategy) strategy).assignSidToGlobalRole(roleName, sid);
             redirect();
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 
@@ -162,7 +162,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             ((FolderBasedAuthorizationStrategy) strategy).assignSidToFolderRole(roleName, sid);
             redirect();
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 
@@ -184,7 +184,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             return ((FolderBasedAuthorizationStrategy) strategy).getGlobalRoles();
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 
@@ -221,7 +221,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             return ((FolderBasedAuthorizationStrategy) strategy).getFolderRoles();
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 
@@ -246,7 +246,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             ((FolderBasedAuthorizationStrategy) strategy).deleteGlobalRole(roleName);
             redirect();
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 
@@ -270,7 +270,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             ((FolderBasedAuthorizationStrategy) strategy).deleteFolderRole(roleName);
             redirect();
         } else {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the AuthorizationStrategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
     }
 

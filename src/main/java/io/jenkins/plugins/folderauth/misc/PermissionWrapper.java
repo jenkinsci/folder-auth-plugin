@@ -2,6 +2,7 @@ package io.jenkins.plugins.folderauth.misc;
 
 import hudson.PluginManager;
 import hudson.security.Permission;
+import io.jenkins.plugins.folderauth.Messages;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -88,9 +89,9 @@ public final class PermissionWrapper {
      */
     private void checkPermission() {
         if (permission == null) {
-            throw new IllegalArgumentException("Unable to infer permission from Id: " + id);
+            throw new IllegalArgumentException(Messages.PermissionWrapper_UnknownPermission() + " " + id);
         } else if (DANGEROUS_PERMISSIONS.contains(permission)) {
-            throw new IllegalArgumentException("Dangerous Permissions are not supported.");
+            throw new IllegalArgumentException(Messages.PermissionWrapper_NoDangerousPermissions());
         }
     }
 
