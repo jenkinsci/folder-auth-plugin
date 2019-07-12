@@ -188,7 +188,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     public void addGlobalRole(@Nonnull GlobalRole globalRole) throws IOException {
         globalRoles.add(globalRole);
         try {
-            Jenkins.getInstance().save();
+            Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save config file, not adding global role", e);
             globalRoles.remove(globalRole);
@@ -220,7 +220,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         role.assignSids(sid);
 
         try {
-            Jenkins.getInstance().save();
+            Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save config file, not assigning the sids.", e);
             role.unassignSids(sid);
@@ -248,7 +248,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     public void addFolderRole(@Nonnull FolderRole folderRole) throws IOException {
         folderRoles.add(folderRole);
         try {
-            Jenkins.getInstance().save();
+            Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save configuration when adding folder role.", e);
             folderRoles.remove(folderRole);
@@ -276,7 +276,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
 
         role.assignSids(sid);
         try {
-            Jenkins.getInstance().save();
+            Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save config file, not assigning the sids.", e);
             role.unassignSids(sid);
@@ -332,7 +332,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         globalRoles.remove(role);
 
         try {
-            Jenkins.getInstance().save();
+            Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save the config when deleting global role. " +
                     "The role was not deleted.", e);
@@ -359,7 +359,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         folderRoles.remove(role);
 
         try {
-            Jenkins.getInstance().save();
+            Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save the config when deleting folder role. " +
                     "The role was not deleted.", e);

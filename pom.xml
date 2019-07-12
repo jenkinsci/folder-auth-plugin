@@ -26,7 +26,7 @@
     <properties>
         <revision>0.01</revision>
         <changelist>-SNAPSHOT</changelist>
-        <jenkins.version>2.60.3</jenkins.version>
+        <jenkins.version>2.164.1</jenkins.version>
         <java.level>8</java.level>
         <configuration-as-code.version>1.24-rc834.e55a938c5ddd</configuration-as-code.version>
     </properties>
@@ -53,6 +53,15 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+        <developerConnection>
+            scm:git:ssh://git@github.com:jenkinsci/${project.artifactId}-plugin.git
+        </developerConnection>
+        <url>https://github.com/jenkinsci/folder-auth-plugin</url>
+        <tag>${scmTag}</tag>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -74,5 +83,3 @@
         </dependency>
     </dependencies>
 </project>
-
-

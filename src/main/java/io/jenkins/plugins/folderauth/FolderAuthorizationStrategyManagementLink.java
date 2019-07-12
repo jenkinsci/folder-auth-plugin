@@ -39,7 +39,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @CheckForNull
     @Override
     public String getIconFileName() {
-        return Jenkins.getInstance().getAuthorizationStrategy() instanceof FolderBasedAuthorizationStrategy ?
+        return Jenkins.get().getAuthorizationStrategy() instanceof FolderBasedAuthorizationStrategy ?
                 "lock.png" : null;
     }
 
@@ -83,7 +83,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public void doAddGlobalRole(@JsonBody GlobalRoleCreationRequest request) throws IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
@@ -109,7 +109,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public void doAssignSidToGlobalRole(@QueryParameter(required = true) String roleName,
                                         @QueryParameter(required = true) String sid) throws IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
@@ -131,7 +131,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public void doAddFolderRole(@JsonBody FolderRoleCreationRequest request) throws IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
@@ -155,7 +155,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public void doAssignSidToFolderRole(@QueryParameter(required = true) String roleName,
                                         @QueryParameter(required = true) String sid) throws IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
@@ -180,7 +180,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     public Set<GlobalRole> getGlobalRoles() {
-        AuthorizationStrategy strategy = Jenkins.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             return ((FolderBasedAuthorizationStrategy) strategy).getGlobalRoles();
         } else {
@@ -196,7 +196,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     public List<AbstractFolder> getAllFolders() {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         List<AbstractFolder> folders;
 
@@ -217,7 +217,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     public Set<FolderRole> getFolderRoles() {
-        AuthorizationStrategy strategy = Jenkins.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             return ((FolderBasedAuthorizationStrategy) strategy).getFolderRoles();
         } else {
@@ -239,7 +239,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public void doDeleteGlobalRole(@QueryParameter(required = true) String roleName)
             throws IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
@@ -263,7 +263,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public void doDeleteFolderRole(@QueryParameter(required = true) String roleName)
             throws IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
