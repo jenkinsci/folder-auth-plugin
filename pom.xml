@@ -10,7 +10,7 @@
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>folder-auth</artifactId>
     <packaging>hpi</packaging>
-    <version>0.1-alpha-1</version>
+    <version>${revision}${changelist}</version>
     <name>Folder-based Authorization Strategy</name>
     <description>Manage access to Folders</description>
 
@@ -23,7 +23,7 @@
     </developers>
 
     <properties>
-        <revision>0.1-alpha-1</revision>
+        <revision>0.1-alpha-2</revision>
         <changelist>-SNAPSHOT</changelist>
         <jenkins.version>2.164.1</jenkins.version>
         <java.level>8</java.level>
@@ -58,7 +58,7 @@
             scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git
         </developerConnection>
         <url>https://github.com/jenkinsci/folder-auth-plugin</url>
-        <tag>folder-auth-0.1-alpha-1</tag>
+        <tag>${scmTag}</tag>
     </scm>
 
     <dependencies>
