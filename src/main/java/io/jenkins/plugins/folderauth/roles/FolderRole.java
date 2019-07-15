@@ -3,8 +3,9 @@ package io.jenkins.plugins.folderauth.roles;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -16,7 +17,6 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     private final Set<String> folders;
 
     @DataBoundConstructor
-    @ParametersAreNonnullByDefault
     @SuppressWarnings("WeakerAccess")
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders, Set<String> sids) {
         super(name, permissions);
@@ -25,12 +25,10 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
         this.folders.addAll(folders);
     }
 
-    @ParametersAreNonnullByDefault
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders) {
         this(name, permissions, folders, Collections.emptySet());
     }
 
-    @ParametersAreNonnullByDefault
     private FolderRole(String name, Set<PermissionWrapper> permissions, HashSet<String> folders, HashSet<String> sids) {
         super(name, permissions, sids);
         this.folders = folders;
@@ -66,7 +64,7 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@CheckForNull Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FolderRole that = (FolderRole) o;
@@ -95,6 +93,7 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
      *
      * @return the folder names as a comma separated string list
      */
+    @Nonnull
     @SuppressWarnings("unused") // used in index.jelly
     public String getFolderNamesCommaSeparated() {
         String csv = folders.toString();
