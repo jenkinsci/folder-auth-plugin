@@ -48,7 +48,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * Maps full name of jobs to their respective {@link ACL}s. The {@link ACL}s here do not
      * get inheritance from their parents.
      */
-    private transient ConcurrentHashMap<String, JobAclImpl> jobAcls = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, JobAclImpl> jobAcls;
     /**
      * Contains the ACLs for projects that do not need any further inheritance.
      * <p>
@@ -62,6 +62,8 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles) {
         this.globalRoles = ConcurrentHashMap.newKeySet();
         this.folderRoles = ConcurrentHashMap.newKeySet();
+
+        this.jobAcls = new ConcurrentHashMap<>();
 
         if (globalRoles != null) {
             this.globalRoles.addAll(globalRoles);
@@ -92,6 +94,18 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
+     * This constructor is used for XStream serialization and does not create ACLs nor does it initialize
+     * transient fields.
+     *
+     * @param globalRoles global roles to be serialized
+     * @param folderRoles folder roles to be serialized
+     */
+    private FolderBasedAuthorizationStrategy(HashSet<GlobalRole> globalRoles, HashSet<FolderRole> folderRoles) {
+        this.globalRoles = globalRoles;
+        this.folderRoles = folderRoles;
+    }
+
+    /**
      * Recalculates {@code jobAcls}.
      *
      * @param doClear if true, jobAcls will be cleared
@@ -113,18 +127,26 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * Used to initialize transient fields when loaded from disk
+     * Initializes the {@link FolderBasedAuthorizationStrategy} when read from the disk.
      *
-     * @return {@code this}
+     * @return a fully resolved {@link FolderBasedAuthorizationStrategy}
      */
     @Nonnull
     @SuppressWarnings("unused")
-    protected Object readResolve() {
-        jobAcls = new ConcurrentHashMap<>();
-        initCache();
-        generateNewGlobalAcl();
-        updateJobAcls(true);
-        return this;
+    private FolderBasedAuthorizationStrategy readResolve() {
+        return new FolderBasedAuthorizationStrategy(globalRoles, folderRoles);
+    }
+
+    /**
+     * Uses {@link #FolderBasedAuthorizationStrategy(HashSet, HashSet)} to
+     * create a proxy {@link FolderBasedAuthorizationStrategy} to be serialized.
+     *
+     * @return a proxy {@link FolderBasedAuthorizationStrategy} only for serialization.
+     */
+    @Nonnull
+    @SuppressWarnings("unused")
+    private FolderBasedAuthorizationStrategy writeReplace() {
+        return new FolderBasedAuthorizationStrategy(new HashSet<>(globalRoles), new HashSet<>(folderRoles));
     }
 
     /**

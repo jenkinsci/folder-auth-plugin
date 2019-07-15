@@ -6,6 +6,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +25,39 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
         this.folders.addAll(folders);
     }
 
+    @ParametersAreNonnullByDefault
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders) {
         this(name, permissions, folders, Collections.emptySet());
+    }
+
+    @ParametersAreNonnullByDefault
+    private FolderRole(String name, Set<PermissionWrapper> permissions, HashSet<String> folders, HashSet<String> sids) {
+        super(name, permissions, sids);
+        this.folders = folders;
+    }
+
+    /**
+     * Used by XStream when serializing this object.
+     * <p>
+     * Simplifies the configuration produced by the object.
+     *
+     * @return a new {@link FolderRole} which does not use thread-safe constructs
+     */
+    @SuppressWarnings("unused")
+    private FolderRole writeReplace() {
+        return new FolderRole(name, permissionWrappers, new HashSet<>(folders), new HashSet<>(sids));
+    }
+
+    /**
+     * Used by XSteam when deserializing.
+     * <p>
+     * Replaces the collections into thread-safe collections.
+     *
+     * @return a new {@link FolderRole} that uses thread safe collections.
+     */
+    @SuppressWarnings("unused")
+    private FolderRole readResolve() {
+        return new FolderRole(name, permissionWrappers, folders, sids);
     }
 
     @Override
