@@ -18,12 +18,14 @@ import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.ParametersAreNullableByDefault;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,34 +59,12 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     private transient Cache<String, SidACL> aclCache;
 
     @DataBoundConstructor
-    @SuppressWarnings("WeakerAccess")
-    @ParametersAreNullableByDefault
     public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles) {
         this.globalRoles = ConcurrentHashMap.newKeySet();
         this.folderRoles = ConcurrentHashMap.newKeySet();
 
-        if (globalRoles != null) {
-            this.globalRoles.addAll(globalRoles);
-        } else {
-            /*
-             * when this AuthorizationStrategy is selected for the first time, this makes the current
-             * user admin (give all permissions) and prevents him/her from getting access denied.
-             *
-             * The same thing happens in RoleBasedAuthorizationStrategy. See RoleBasedStrategy.DESCRIPTOR.newInstance()
-             */
-            HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
-            groups.remove(PermissionGroup.get(Permission.class));
-            Set<PermissionWrapper> adminPermissions = PermissionWrapper.wrapPermissions(
-                FolderAuthorizationStrategyManagementLink.getSafePermissions(groups));
-
-            GlobalRole adminRole = new GlobalRole(ADMIN_ROLE_NAME, adminPermissions);
-            adminRole.assignSids(new PrincipalSid(Jenkins.getAuthentication()).getPrincipal());
-            this.globalRoles.add(adminRole);
-        }
-
-        if (folderRoles != null) {
-            this.folderRoles.addAll(folderRoles);
-        }
+        this.globalRoles.addAll(globalRoles);
+        this.folderRoles.addAll(folderRoles);
 
         initCache();
         generateNewGlobalAcl();
@@ -385,6 +365,30 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         @Override
         public String getDisplayName() {
             return Messages.FolderBasedAuthorizationStrategy_DisplayName();
+        }
+
+        @Override
+        public FolderBasedAuthorizationStrategy newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) {
+            AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
+            if (strategy instanceof FolderBasedAuthorizationStrategy) {
+                // this action was invoked from the 'Configure Global Security' page when the
+                // old strategy was FolderBasedAuthorizationStrategy; return it back as formData would be empty
+                return (FolderBasedAuthorizationStrategy) strategy;
+            } else {
+                // when this AuthorizationStrategy is selected for the first time, this makes the current
+                // user admin (give all permissions) and prevents him/her from getting access denied.
+                // The same thing happens in Role Strategy plugin. See RoleBasedStrategy.DESCRIPTOR.newInstance()
+
+                HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
+                groups.remove(PermissionGroup.get(Permission.class));
+                Set<PermissionWrapper> adminPermissions = PermissionWrapper.wrapPermissions(
+                        FolderAuthorizationStrategyManagementLink.getSafePermissions(groups));
+
+                GlobalRole adminRole = new GlobalRole(ADMIN_ROLE_NAME, adminPermissions);
+                adminRole.assignSids(new PrincipalSid(Jenkins.getAuthentication()).getPrincipal());
+
+                return new FolderBasedAuthorizationStrategy(Collections.singleton(adminRole), Collections.emptySet());
+            }
         }
     }
 }
