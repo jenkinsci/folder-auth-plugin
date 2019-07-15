@@ -10,12 +10,12 @@ public class PermissionWrapperTest {
     public static JenkinsRule j = new JenkinsRule();
 
     @Test(expected = IllegalArgumentException.class)
-    public void testDangerousPermission() {
+    public void shouldNotAllowDangerousPermissions() {
         new PermissionWrapper(Jenkins.RUN_SCRIPTS.getId());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNullPermission() {
+    public void shouldNotAllowNullPermissions() {
         new PermissionWrapper("this is not a permission id");
     }
 }
