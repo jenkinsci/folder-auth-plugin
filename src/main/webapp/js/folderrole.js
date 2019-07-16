@@ -23,6 +23,13 @@ const getFolders = () => {
  */
 const renderFoldersAsOptions = (folders) => {
     const select = document.getElementById('folder-select');
+    const loadingLabel = document.getElementById('loading-folders');
+
+    if (!(Array.isArray(folders) && folders.length)) {
+        loadingLabel.innerText = 'Please create a folder before adding a folder role.';
+        return;
+    }
+
     folders.forEach(folder => {
         const option = document.createElement('option');
         option.value = folder;
@@ -34,7 +41,6 @@ const renderFoldersAsOptions = (folders) => {
     select.style.display = 'block';
 
     // remove the 'Loading folders' label
-    const loadingLabel = document.getElementById('loading-folders');
     loadingLabel.parentElement.removeChild(loadingLabel);
 
     // enable submitting the form
