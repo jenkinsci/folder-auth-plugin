@@ -31,7 +31,9 @@
                             <div class="collapsible-content">
                                 <ul>
                                     <j:forEach items="${globalRole.permissions}" var="wrapper">
-                                        <li>${wrapper.permission.group.title} | ${wrapper.permission.name}</li>
+                                        <li tooltip="${wrapper.permission.description}">
+                                            ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                        </li>
                                     </j:forEach>
                                 </ul>
                             </div>
@@ -60,7 +62,7 @@
                     <label class="form-label">
                         <select multiple="multiple" name="permissions" id="global-permission-select">
                             <j:forEach items="${it.getGlobalPermissions()}" var="perm">
-                                <option value="${perm.id}">
+                                <option value="${perm.id}" tooltip="${perm.description}">
                                     ${perm.group.title} | ${perm.name}
                                 </option>
                             </j:forEach>
@@ -104,7 +106,9 @@
                             <div class="collapsible-content">
                                 <ul>
                                     <j:forEach items="${folderRole.permissions}" var="wrapper">
-                                        <li>${wrapper.permission.group.title} | ${wrapper.permission.name}</li>
+                                        <li tooltip="${wrapper.permission.description}">
+                                            ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                        </li>
                                     </j:forEach>
                                 </ul>
                             </div>
@@ -142,7 +146,9 @@
                         ${%permissions}
                         <select multiple="multiple" name="permissions" id="folder-permission-select">
                             <j:forEach items="${it.getFolderPermissions()}" var="perm">
-                                <option value="${perm.id}">${perm.group.title} | ${perm.name}</option>
+                                <option value="${perm.id}" tooltip="${perm.description}">
+                                    ${perm.group.title} | ${perm.name}
+                                </option>
                             </j:forEach>
                         </select>
                     </label>
