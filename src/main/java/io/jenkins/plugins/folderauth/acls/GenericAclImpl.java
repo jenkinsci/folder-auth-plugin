@@ -6,9 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * An {@link hudson.security.ACL} for one {@link hudson.model.Job} or one {@link hudson.model.AbstractProject}.
+ * An {@link hudson.security.ACL} for one {@link hudson.model.Job} or one {@link hudson.model.AbstractProject} or
+ * one {@link hudson.model.Computer}.
  */
-public class JobAclImpl extends AbstractAcl {
+public class GenericAclImpl extends AbstractAcl {
 
     /**
      * Assigns {@code permissions} to each sid in {@code sid}.

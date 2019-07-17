@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import hudson.Extension;
 import hudson.model.AbstractItem;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.security.ACL;
@@ -12,9 +13,10 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SidACL;
 import io.jenkins.plugins.folderauth.acls.GlobalAclImpl;
-import io.jenkins.plugins.folderauth.acls.JobAclImpl;
+import io.jenkins.plugins.folderauth.acls.GenericAclImpl;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
+import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
@@ -41,6 +43,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     private static final Logger LOGGER = Logger.getLogger(FolderBasedAuthorizationStrategy.class.getName());
     private static final String ADMIN_ROLE_NAME = "admin";
     private static final String FOLDER_SEPARATOR = "/";
+    private final Set<AgentRole> agentRoles;
     private final Set<GlobalRole> globalRoles;
     private final Set<FolderRole> folderRoles;
     private transient GlobalAclImpl globalAcl;
@@ -48,18 +51,25 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * Maps full name of jobs to their respective {@link ACL}s. The {@link ACL}s here do not
      * get inheritance from their parents.
      */
-    private transient ConcurrentHashMap<String, JobAclImpl> jobAcls = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, GenericAclImpl> jobAcls = new ConcurrentHashMap<>();
+    /**
+     * Maps full name of the Agents to their respective {@link ACL}s. Inheritance is not needed here
+     * because Agents are not nestable.
+     */
+    private transient ConcurrentHashMap<String, GenericAclImpl> agentAcls = new ConcurrentHashMap<>();
     /**
      * Contains the ACLs for projects that do not need any further inheritance.
      * <p>
      * Invalidate this cache whenever folder roles are updated.
      */
-    private transient Cache<String, SidACL> aclCache;
+    private transient Cache<String, SidACL> jobAclCache;
 
     @DataBoundConstructor
     @SuppressWarnings("WeakerAccess")
     @ParametersAreNullableByDefault
-    public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles) {
+    public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles,
+            Set<AgentRole> agentRoles) {
+        this.agentRoles = ConcurrentHashMap.newKeySet();
         this.globalRoles = ConcurrentHashMap.newKeySet();
         this.folderRoles = ConcurrentHashMap.newKeySet();
 
@@ -86,9 +96,14 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             this.folderRoles.addAll(folderRoles);
         }
 
+        if (agentRoles != null) {
+            this.agentRoles.addAll(agentRoles);
+        }
+
         initCache();
         generateNewGlobalAcl();
         updateJobAcls(true);
+        updateAgentAcls();
     }
 
     /**
@@ -103,6 +118,14 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
 
         for (FolderRole role : folderRoles) {
             updateAclForFolderRole(role);
+        }
+    }
+
+    private synchronized void updateAgentAcls() {
+        agentAcls.clear();
+
+        for (AgentRole role : agentRoles) {
+            updateAclForAgentRole(role);
         }
     }
 
@@ -145,7 +168,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @Override
     public SidACL getACL(@Nonnull AbstractItem item) {
         String fullName = item.getFullName();
-        SidACL acl = aclCache.getIfPresent(fullName);
+        SidACL acl = jobAclCache.getIfPresent(fullName);
 
         if (acl != null) {
             return acl;
@@ -165,8 +188,24 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             sb.append(FOLDER_SEPARATOR);
         }
 
-        aclCache.put(fullName, acl);
+        jobAclCache.put(fullName, acl);
         return acl;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
+    @Override
+    public SidACL getACL(@Nonnull Computer computer) {
+        String name = computer.getName();
+        SidACL acl = agentAcls.get(name);
+        if (acl == null) {
+            return globalAcl;
+        } else {
+            // TODO: cache these ACLs
+            return globalAcl.newInheritingACL(acl);
+        }
     }
 
     /**
@@ -178,6 +217,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         Set<String> groups = ConcurrentHashMap.newKeySet();
         globalRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
         folderRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
+        agentRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
         return Collections.unmodifiableCollection(groups);
     }
 
@@ -195,11 +235,16 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             throw e;
         } finally {
             generateNewGlobalAcl();
+            jobAclCache.invalidateAll();
         }
     }
 
     public Set<GlobalRole> getGlobalRoles() {
         return Collections.unmodifiableSet(globalRoles);
+    }
+
+    public Set<AgentRole> getAgentRoles() {
+        return Collections.unmodifiableSet(agentRoles);
     }
 
     /**
@@ -227,6 +272,8 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             throw e;
         } finally {
             generateNewGlobalAcl();
+            // inherited jobAcls depend on globalAcl
+            jobAclCache.invalidateAll();
         }
     }
 
@@ -254,7 +301,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             folderRoles.remove(folderRole);
             throw e;
         } finally {
-            aclCache.invalidateAll();
+            jobAclCache.invalidateAll();
             updateAclForFolderRole(folderRole);
         }
     }
@@ -300,14 +347,33 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     private void updateAclForFolderRole(@Nonnull FolderRole role) {
         for (String name : role.getFolderNames()) {
-            JobAclImpl acl = jobAcls.get(name);
-            if (acl == null) {
-                acl = new JobAclImpl();
-            }
-            acl.assignPermissions(role.getSids(),
-                    role.getPermissions().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
-            jobAcls.put(name, acl);
+            updateGenericAcl(name, jobAcls, role);
         }
+    }
+
+    /**
+     * Updates the ACL for the agent role
+     * <p>
+     * <b>Note: does not invalidate the cache</b>
+     * <p>
+     * Should be called when an agentRole has been updated.
+     *
+     * @param role the role to be updated
+     */
+    private void updateAclForAgentRole(@Nonnull AgentRole role) {
+        for (String agent : role.getAgents()) {
+            updateGenericAcl(agent, agentAcls, role);
+        }
+    }
+
+    private void updateGenericAcl(String fullName, ConcurrentHashMap<String, GenericAclImpl> acls, AbstractRole role) {
+        GenericAclImpl acl = acls.get(fullName);
+        if (acl == null) {
+            acl = new GenericAclImpl();
+        }
+        acl.assignPermissions(role.getSids(),
+                role.getPermissions().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
+        acls.put(fullName, acl);
     }
 
     /**
@@ -368,12 +434,12 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         } finally {
             // TODO update jobACLs manually?
             updateJobAcls(true);
-            aclCache.invalidateAll();
+            jobAclCache.invalidateAll();
         }
     }
 
     private void initCache() {
-        aclCache = CacheBuilder.newBuilder()
+        jobAclCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(2048)
                 .build();
