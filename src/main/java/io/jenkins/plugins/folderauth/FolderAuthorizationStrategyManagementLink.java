@@ -3,7 +3,12 @@ package io.jenkins.plugins.folderauth;
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import hudson.Extension;
 import hudson.model.Computer;
+import hudson.model.Hudson;
+import hudson.model.Item;
 import hudson.model.ManagementLink;
+import hudson.model.Run;
+import hudson.model.View;
+import hudson.scm.SCM;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
@@ -12,6 +17,7 @@ import hudson.security.PermissionGroup;
 import io.jenkins.plugins.folderauth.misc.FolderRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.GlobalRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
+import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
@@ -26,6 +32,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +64,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getGlobalPermissions() {
         HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
         groups.remove(PermissionGroup.get(Permission.class));
@@ -65,9 +73,24 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getFolderPermissions() {
         HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
         groups.remove(PermissionGroup.get(Computer.class));
+        groups.remove(PermissionGroup.get(Permission.class));
+        return getSafePermissions(groups);
+    }
+
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
+    public Set<Permission> getAgentPermissions() {
+        HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
+        groups.remove(PermissionGroup.get(Run.class));
+        groups.remove(PermissionGroup.get(SCM.class));
+        groups.remove(PermissionGroup.get(View.class));
+        groups.remove(PermissionGroup.get(Item.class));
+        groups.remove(PermissionGroup.get(Hudson.class));
         groups.remove(PermissionGroup.get(Permission.class));
         return getSafePermissions(groups);
     }
@@ -179,6 +202,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public Set<GlobalRole> getGlobalRoles() {
         AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
@@ -195,6 +219,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      */
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public List<AbstractFolder> getAllFolders() {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
@@ -208,6 +233,26 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     }
 
     /**
+     * Get all {@link Computer}s in the system
+     *
+     * @return all Computers in the system
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
+    public List<Computer> getAllComputers() {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        Computer[] computers;
+
+        try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
+            computers = jenkins.getComputers();
+        }
+
+        return Arrays.asList(computers);
+    }
+
+    /**
      * Returns the {@link FolderRole}s used by the {@link FolderBasedAuthorizationStrategy}.
      *
      * @return the {@link FolderRole}s used by the {@link FolderBasedAuthorizationStrategy}
@@ -216,10 +261,23 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      */
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public Set<FolderRole> getFolderRoles() {
         AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             return ((FolderBasedAuthorizationStrategy) strategy).getFolderRoles();
+        } else {
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
+        }
+    }
+
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
+    public Set<AgentRole> getAgentRoles() {
+        AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
+        if (strategy instanceof FolderBasedAuthorizationStrategy) {
+            return ((FolderBasedAuthorizationStrategy) strategy).getAgentRoles();
         } else {
             throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }

@@ -144,6 +144,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @SuppressWarnings("unused")
     protected Object readResolve() {
         jobAcls = new ConcurrentHashMap<>();
+        agentAcls = new ConcurrentHashMap<>();
         initCache();
         generateNewGlobalAcl();
         updateJobAcls(true);

@@ -27,4 +27,15 @@ public class AgentRole extends AbstractRole {
     public Set<String> getAgents() {
         return Collections.unmodifiableSet(agents);
     }
+
+    /**
+     * Returns the agent names as a comma separated string list
+     *
+     * @return the agent names as a comma separated string list
+     */
+    @SuppressWarnings("unused") // used in index.jelly
+    public String getAgentNamesCommaSeparated() {
+        String csv = agents.toString();
+        return csv.substring(1, csv.length() - 1);
+    }
 }

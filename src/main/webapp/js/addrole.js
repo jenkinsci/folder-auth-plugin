@@ -54,6 +54,36 @@ const addFolderRole = () => {
     sendPostRequest(`${rootURL}/folder-auth/addFolderRole`, response);
 };
 
+// noinspection JSUnusedGlobalSymbols
+/**
+ * Adds an agent Role
+ */
+const addAgentRole = () => {
+    const roleName = document.getElementById('agentRoleName').value;
+    if (!roleName || roleName.length < 3) {
+        alert('Please enter a valid name for the role to be added');
+        return;
+    }
+
+    const response = {
+        name: roleName,
+        agentNames: document.getElementById('agent-select').getValue(),
+        permissions: document.getElementById('agent-permission-select').getValue(),
+    };
+
+    if (!response.permissions || response.permissions.length <= 0) {
+        alert('Please select at least one permission');
+        return;
+    }
+
+    if (!response.folderNames || response.folderNames.length <= 0) {
+        alert('Please select at least one agent on which this role will be applicable');
+        return;
+    }
+
+    sendPostRequest(`${rootURL}/folder-auth/addAgentRole`, response);
+};
+
 /**
  * Sends a POST request to {@code postUrl}
  * @param postUrl the URL
