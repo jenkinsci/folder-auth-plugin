@@ -3,7 +3,9 @@ package io.jenkins.plugins.folderauth;
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import hudson.Extension;
 import hudson.model.Computer;
+import hudson.model.Hudson;
 import hudson.model.ManagementLink;
+import hudson.model.View;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
@@ -57,6 +59,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getGlobalPermissions() {
         HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
         groups.remove(PermissionGroup.get(Permission.class));
@@ -65,8 +68,11 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     @Nonnull
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getFolderPermissions() {
         HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
+        groups.remove(PermissionGroup.get(View.class));
+        groups.remove(PermissionGroup.get(Hudson.class));
         groups.remove(PermissionGroup.get(Computer.class));
         groups.remove(PermissionGroup.get(Permission.class));
         return getSafePermissions(groups);
