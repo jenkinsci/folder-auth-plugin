@@ -377,6 +377,30 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         }
     }
 
+    /**
+     * Deletes an {@link AgentRole} from the {@link FolderBasedAuthorizationStrategy}.
+     *
+     * @param roleName the name of the role to be deleted
+     * @throws IOException                      when unable to delete the role
+     * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                          not {@link FolderBasedAuthorizationStrategy}
+     * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doDeleteAgentRole(@QueryParameter(required = true) String roleName)
+            throws IOException {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
+        if (strategy instanceof FolderBasedAuthorizationStrategy) {
+            ((FolderBasedAuthorizationStrategy) strategy).deleteAgentRole(roleName);
+            redirect();
+        } else {
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
+        }
+    }
+
     static Set<Permission> getSafePermissions(Set<PermissionGroup> groups) {
         HashSet<Permission> safePermissions = new HashSet<>();
         groups.stream().map(PermissionGroup::getPermissions).forEach(safePermissions::addAll);

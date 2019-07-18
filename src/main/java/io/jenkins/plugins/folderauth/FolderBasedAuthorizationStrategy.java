@@ -441,13 +441,13 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @param roleName the name of the role to be deleted
      * @throws IOException            when unable to save the configuration
-     * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
+     * @throws NoSuchElementException when no {@link FolderRole} with name equal to {@code roleName} exists
      */
     public void deleteFolderRole(String roleName) throws IOException {
         FolderRole role = folderRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No GlobalRole with the name " + roleName + " exists."));
+                        new NoSuchElementException("No FolderRole with the name " + roleName + " exists."));
 
         folderRoles.remove(role);
 
@@ -457,6 +457,35 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             LOGGER.log(Level.SEVERE, "Unable to save the config when deleting folder role. " +
                     "The role was not deleted.", e);
             folderRoles.add(role);
+            throw e;
+        } finally {
+            // TODO update jobACLs manually?
+            updateJobAcls(true);
+            jobAclCache.invalidateAll();
+        }
+    }
+
+    /**
+     * Deletes the {@link AgentRole} identified by its name.
+     *
+     * @param roleName the name of the role to be deleted
+     * @throws IOException            when unable to save the configuration
+     * @throws NoSuchElementException when no {@link AgentRole} with name equal to {@code roleName} exists
+     */
+    public void deleteAgentRole(String roleName) throws IOException {
+        AgentRole role = agentRoles.stream()
+                .filter(r -> r.getName().equals(roleName))
+                .findAny().orElseThrow(() ->
+                        new NoSuchElementException("No AgentRole with the name " + roleName + " exists."));
+
+        agentRoles.remove(role);
+
+        try {
+            Jenkins.get().save();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Unable to save the config when deleting agent role. " +
+                    "The role was not deleted.", e);
+            agentRoles.add(role);
             throw e;
         } finally {
             // TODO update jobACLs manually?
