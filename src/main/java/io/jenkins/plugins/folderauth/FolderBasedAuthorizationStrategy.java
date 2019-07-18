@@ -308,6 +308,25 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
+     * Adds an {@link AgentRole} to this strategy
+     *
+     * @param agentRole the {@link FolderRole} to be added
+     * @throws IOException when unable to save configuration to disk
+     */
+    public void addFolderRole(@Nonnull AgentRole agentRole) throws IOException {
+        agentRoles.add(agentRole);
+        try {
+            Jenkins.get().save();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Unable to save configuration when adding agent role.", e);
+            agentRoles.remove(agentRole);
+            throw e;
+        } finally {
+            updateAclForAgentRole(agentRole);
+        }
+    }
+
+    /**
      * Assigns a SID to a {@link FolderRole}.
      *
      * @param roleName the name of the {@link FolderRole}
@@ -320,7 +339,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         FolderRole role = folderRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No GlobalRole with the name " + roleName + " exists."));
+                        new NoSuchElementException("No FolderRole with the name " + roleName + " exists."));
 
         role.assignSids(sid);
         try {
@@ -334,6 +353,36 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             // folder roles does not change and we're directly modifying the ACL
             // whose references are kept inside the inheriting SidACL.
             updateAclForFolderRole(role);
+        }
+    }
+
+    /**
+     * Assigns a SID to a {@link FolderRole}.
+     *
+     * @param roleName the name of the {@link FolderRole}
+     * @param sid      the sid to be assigned
+     * @throws IOException            when unable to save the configuration to disk
+     * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
+     */
+    public void assignSidToAgentRole(String roleName, String sid) throws IOException {
+        // TODO maintain an index of roles according to their names
+        AgentRole role = agentRoles.stream()
+                .filter(r -> r.getName().equals(roleName))
+                .findAny().orElseThrow(() ->
+                        new NoSuchElementException("No AgentRole with the name " + roleName + " exists."));
+
+        role.assignSids(sid);
+        try {
+            Jenkins.get().save();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Unable to save config file, not assigning the sids.", e);
+            role.unassignSids(sid);
+            throw e;
+        } finally {
+            // no cache invalidation required here because the inheritance of
+            // folder roles does not change and we're directly modifying the ACL
+            // whose references are kept inside the inheriting SidACL.
+            updateAclForAgentRole(role);
         }
     }
 

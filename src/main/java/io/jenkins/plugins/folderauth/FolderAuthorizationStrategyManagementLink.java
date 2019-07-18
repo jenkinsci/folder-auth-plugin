@@ -14,6 +14,7 @@ import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import io.jenkins.plugins.folderauth.misc.AgentRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.FolderRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.GlobalRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
@@ -163,9 +164,27 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     }
 
     /**
+     * Adds an {@link AgentRole} to {@link FolderBasedAuthorizationStrategy}.
+     *
+     * @param request the request to create the role
+     * @throws IOException           when unable to add the role
+     * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
+     *                               not {@link FolderBasedAuthorizationStrategy}
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doAddAgentRole(@JsonBody AgentRoleCreationRequest request) throws IOException {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
+        if (strategy instanceof FolderBasedAuthorizationStrategy) {
+            ((FolderBasedAuthorizationStrategy) strategy).addFolderRole(request.getAgentRole());
+        }
+    }
+
+    /**
      * Assigns {@code sid} to the folder role identified by {@code roleName}.
      * <p>
-     * Does not do anything if a role corresponding to the {@code roleName} does not exist.
      *
      * @param roleName the name of the global to which {@code sid} will be assigned to.
      * @param sid      the sid of the user/group to be assigned.
@@ -183,6 +202,32 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
             ((FolderBasedAuthorizationStrategy) strategy).assignSidToFolderRole(roleName, sid);
+            redirect();
+        } else {
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
+        }
+    }
+
+    /**
+     * Assigns {@code sid} to the {@link AgentRole} identified by {@code roleName}.
+     * <p>
+     *
+     * @param roleName the name of the global to which {@code sid} will be assigned to.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IOException                      when unable to assign the Sid to the role
+     * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                          not {@link FolderBasedAuthorizationStrategy}
+     * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doAssignSidToAgentRole(@QueryParameter(required = true) String roleName,
+                                        @QueryParameter(required = true) String sid) throws IOException {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
+        if (strategy instanceof FolderBasedAuthorizationStrategy) {
+            ((FolderBasedAuthorizationStrategy) strategy).assignSidToAgentRole(roleName, sid);
             redirect();
         } else {
             throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());

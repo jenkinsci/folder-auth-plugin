@@ -95,7 +95,7 @@
                             <form action="${rootURL}/${it.urlName}/assignSidToFolderRole" method="POST">
                                 <div class="form-row">
                                     <label for="assign-sid-folder-${index}" style="margin-right: 10px;">
-                                        ${assignSid}
+                                        ${%assignSid}
                                     </label>
                                     <input id="assign-sid-folder-${index}" type="text" name="sid"/>
                                     <input type="hidden" value="${folderRole.name}" name="roleName"/>
@@ -179,7 +179,7 @@
                             <form action="${rootURL}/${it.urlName}/assignSidToAgentRole" method="POST">
                                 <div class="form-row">
                                     <label for="assign-sid-agent-${index}" style="margin-right: 10px;">
-                                        ${assignSid}
+                                        ${%assignSid}
                                     </label>
                                     <input id="assign-sid-agent-${index}" type="text" name="sid"/>
                                     <input type="hidden" value="${agentRole.name}" name="roleName"/>
@@ -213,13 +213,13 @@
                     <div class="form-row">
                         <label class="form-label">
                             ${%roleName}:
-                            <input type="text" id="folderRoleName" name="roleName" minlength="3"/>
+                            <input type="text" id="agentRoleName" name="roleName" minlength="3"/>
                         </label>
                     </div>
                     <div class="form-row">
                         <label class="form-label">
                             ${%applyOn}:
-                            <select name="folderNames" multiple="multiple" id="folder-select" class="form-control">
+                            <select name="agentNames" multiple="multiple" id="agent-select" class="form-control">
                                 <j:forEach items="${it.allComputers}" var="agent">
                                     <option value="${agent.name}">${agent.displayName}</option>
                                 </j:forEach>
@@ -228,7 +228,7 @@
                     </div>
                     <label class="form-label">
                         ${%permissions}
-                        <select multiple="multiple" name="permissions" id="folder-permission-select">
+                        <select multiple="multiple" name="permissions" id="agent-permission-select">
                             <j:forEach items="${it.getAgentPermissions()}" var="perm">
                                 <option value="${perm.id}" tooltip="${perm.description}">
                                     ${perm.group.title} | ${perm.name}

@@ -76,7 +76,7 @@ const addAgentRole = () => {
         return;
     }
 
-    if (!response.folderNames || response.folderNames.length <= 0) {
+    if (!response.agentNames || response.agentNames.length <= 0) {
         alert('Please select at least one agent on which this role will be applicable');
         return;
     }
