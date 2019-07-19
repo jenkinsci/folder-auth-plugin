@@ -217,10 +217,12 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         }
     }
 
+    @Nonnull
     public Set<GlobalRole> getGlobalRoles() {
         return Collections.unmodifiableSet(globalRoles);
     }
 
+    @Nonnull
     public Set<AgentRole> getAgentRoles() {
         return Collections.unmodifiableSet(agentRoles);
     }
@@ -260,6 +262,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return {@link FolderRole}s on which this {@link AuthorizationStrategy} works
      */
+    @Nonnull
     public Set<FolderRole> getFolderRoles() {
         return Collections.unmodifiableSet(folderRoles);
     }
@@ -509,6 +512,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             return Messages.FolderBasedAuthorizationStrategy_DisplayName();
         }
 
+        @Nonnull
         @Override
         public FolderBasedAuthorizationStrategy newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) {
             AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();

@@ -2,6 +2,7 @@ package io.jenkins.plugins.folderauth.misc;
 
 import io.jenkins.plugins.folderauth.roles.AgentRole;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ public class AgentRoleCreationRequest {
     public Set<String> agentNames = Collections.emptySet();
     public Set<String> permissions = Collections.emptySet();
 
+    @Nonnull
     public AgentRole getAgentRole() {
         Set<PermissionWrapper> perms = permissions.stream().map(PermissionWrapper::new).collect(Collectors.toSet());
         return new AgentRole(name, perms, agentNames);

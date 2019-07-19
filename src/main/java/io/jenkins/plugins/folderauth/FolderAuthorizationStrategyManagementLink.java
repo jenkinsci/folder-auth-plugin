@@ -31,6 +31,7 @@ import org.kohsuke.stapler.json.JsonBody;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Extension
+@ParametersAreNonnullByDefault
 public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     private static final Logger LOGGER = Logger.getLogger(FolderAuthorizationStrategyManagementLink.class.getName());
 
@@ -401,6 +403,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         }
     }
 
+    @Nonnull
     static Set<Permission> getSafePermissions(Set<PermissionGroup> groups) {
         HashSet<Permission> safePermissions = new HashSet<>();
         groups.stream().map(PermissionGroup::getPermissions).forEach(safePermissions::addAll);
