@@ -5,7 +5,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -17,7 +16,6 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     private final Set<String> folders;
 
     @DataBoundConstructor
-    @SuppressWarnings("WeakerAccess")
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders, Set<String> sids) {
         super(name, permissions);
         this.sids.addAll(sids);

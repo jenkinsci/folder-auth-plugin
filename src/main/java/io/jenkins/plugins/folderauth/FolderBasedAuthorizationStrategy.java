@@ -43,8 +43,8 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     private static final Logger LOGGER = Logger.getLogger(FolderBasedAuthorizationStrategy.class.getName());
     private static final String ADMIN_ROLE_NAME = "admin";
     private static final String FOLDER_SEPARATOR = "/";
-    private final Set<GlobalRole> globalRoles;
-    private final Set<FolderRole> folderRoles;
+    private Set<GlobalRole> globalRoles;
+    private Set<FolderRole> folderRoles;
     private transient GlobalAclImpl globalAcl;
     /**
      * Maps full name of jobs to their respective {@link ACL}s. The {@link ACL}s here do not
@@ -60,20 +60,11 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
 
     @DataBoundConstructor
     public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles) {
-        this.globalRoles = ConcurrentHashMap.newKeySet();
-        this.folderRoles = ConcurrentHashMap.newKeySet();
-
-        this.globalRoles.addAll(globalRoles);
-        this.folderRoles.addAll(folderRoles);
-
-        initCache();
-        generateNewGlobalAcl();
-        updateJobAcls(true);
+        init(globalRoles, folderRoles);
     }
 
     /**
-     * This constructor is used for XStream serialization and does not create ACLs nor does it initialize
-     * transient fields.
+     * This constructor should be used only for XStream serialization and does not call {@link #init(Set, Set)}.
      *
      * @param globalRoles global roles to be serialized
      * @param folderRoles folder roles to be serialized
@@ -84,14 +75,10 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * Recalculates {@code jobAcls}.
-     *
-     * @param doClear if true, jobAcls will be cleared
+     * Clears and recalculates {@code jobAcls}.
      */
-    private synchronized void updateJobAcls(boolean doClear) {
-        if (doClear) {
-            jobAcls.clear();
-        }
+    private synchronized void updateJobAcls() {
+        jobAcls.clear();
 
         for (FolderRole role : folderRoles) {
             updateAclForFolderRole(role);
@@ -112,7 +99,8 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @Nonnull
     @SuppressWarnings("unused")
     private FolderBasedAuthorizationStrategy readResolve() {
-        return new FolderBasedAuthorizationStrategy(globalRoles, folderRoles);
+        init(globalRoles, folderRoles);
+        return this;
     }
 
     /**
@@ -120,10 +108,12 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * create a proxy {@link FolderBasedAuthorizationStrategy} to be serialized.
      *
      * @return a proxy {@link FolderBasedAuthorizationStrategy} only for serialization.
+     * @see #FolderBasedAuthorizationStrategy(HashSet, HashSet)
      */
     @Nonnull
     @SuppressWarnings("unused")
     private FolderBasedAuthorizationStrategy writeReplace() {
+        // Return a temporary FolderBasedAuthorizationStrategy that uses HashSets for simpler serialization
         return new FolderBasedAuthorizationStrategy(new HashSet<>(globalRoles), new HashSet<>(folderRoles));
     }
 
@@ -367,16 +357,29 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             throw e;
         } finally {
             // TODO update jobACLs manually?
-            updateJobAcls(true);
+            updateJobAcls();
             aclCache.invalidateAll();
         }
     }
 
-    private void initCache() {
+    /**
+     * Initializes the cache, generates ACLs and makes the {@link FolderBasedAuthorizationStrategy}
+     * ready for work.
+     */
+    private void init(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles) {
+        this.globalRoles = ConcurrentHashMap.newKeySet();
+        this.folderRoles = ConcurrentHashMap.newKeySet();
+
+        this.globalRoles.addAll(globalRoles);
+        this.folderRoles.addAll(folderRoles);
+
+        jobAcls = new ConcurrentHashMap<>();
         aclCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .maximumSize(2048)
-                .build();
+                       .expireAfterWrite(1, TimeUnit.HOURS)
+                       .maximumSize(2048)
+                       .build();
+        generateNewGlobalAcl();
+        updateJobAcls();
     }
 
     @Extension
