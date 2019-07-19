@@ -25,6 +25,12 @@ div.role-container {
     overflow-y: scroll;
 }
 
+.loading {
+    padding-top: 7px;
+    font-size: 12px;
+    font-weight: lighter;
+}
+
 div.role {
     display: flex;
     flex-direction: column;
