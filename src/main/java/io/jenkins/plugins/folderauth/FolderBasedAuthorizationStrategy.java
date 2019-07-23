@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,14 +76,27 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * Clears and recalculates {@code jobAcls}.
+     * Generates new ACL objects for folderRoles and then calls {@link #setJobAcls(ConcurrentHashMap)}.
+     * <p>
+     * Call this method when folderRoles are changed.
      */
-    private synchronized void updateJobAcls() {
-        jobAcls.clear();
+    private void generateNewJobAcls() {
+        ConcurrentHashMap<String, JobAclImpl> newAcls = new ConcurrentHashMap<>();
 
         for (FolderRole role : folderRoles) {
-            updateAclForFolderRole(role);
+            updateAclsForFolderRole(newAcls, role);
         }
+
+        setJobAcls(newAcls);
+    }
+
+    /**
+     * Synchronized setter for {@link #jobAcls}.
+     *
+     * @param acls the new acls
+     */
+    private synchronized void setJobAcls(ConcurrentHashMap<String, JobAclImpl> acls) {
+        jobAcls = acls;
     }
 
     @Nonnull
@@ -175,7 +189,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         globalAcl = new GlobalAclImpl(globalRoles);
     }
 
-    public void addGlobalRole(@Nonnull GlobalRole globalRole) throws IOException {
+    public synchronized void addGlobalRole(@Nonnull GlobalRole globalRole) throws IOException {
         globalRoles.add(globalRole);
         try {
             Jenkins.get().save();
@@ -235,7 +249,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @param folderRole the {@link FolderRole} to be added
      * @throws IOException when unable to save configuration to disk
      */
-    public void addFolderRole(@Nonnull FolderRole folderRole) throws IOException {
+    public synchronized void addFolderRole(@Nonnull FolderRole folderRole) throws IOException {
         folderRoles.add(folderRole);
         try {
             Jenkins.get().save();
@@ -245,7 +259,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             throw e;
         } finally {
             aclCache.invalidateAll();
-            updateAclForFolderRole(folderRole);
+            updateAclsForFolderRole(jobAcls, folderRole);
         }
     }
 
@@ -275,7 +289,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             // no cache invalidation required here because the inheritance of
             // folder roles does not change and we're directly modifying the ACL
             // whose references are kept inside the inheriting SidACL.
-            updateAclForFolderRole(role);
+            updateAclsForFolderRole(jobAcls, role);
         }
     }
 
@@ -286,17 +300,18 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * <p>
      * Should be called when a folderRole has been updated.
      *
-     * @param role the role to be updated
+     * @param acls map containing acls that would be updated for the folder role
+     * @param role the role for which {@link ACL}s would be updated
      */
-    private void updateAclForFolderRole(@Nonnull FolderRole role) {
+    private void updateAclsForFolderRole(Map<String, JobAclImpl> acls, @Nonnull FolderRole role) {
         for (String name : role.getFolderNames()) {
-            JobAclImpl acl = jobAcls.get(name);
+            JobAclImpl acl = acls.get(name);
             if (acl == null) {
                 acl = new JobAclImpl();
             }
             acl.assignPermissions(role.getSids(),
                     role.getPermissions().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
-            jobAcls.put(name, acl);
+            acls.put(name, acl);
         }
     }
 
@@ -308,7 +323,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @throws NoSuchElementException   when no {@link GlobalRole} with name equal to {@code roleName} exists
      * @throws IllegalArgumentException when trying to delete the admin role
      */
-    public void deleteGlobalRole(String roleName) throws IOException {
+    public synchronized void deleteGlobalRole(String roleName) throws IOException {
         if (roleName.equals(ADMIN_ROLE_NAME)) {
             // the admin role cannot be deleted
             throw new IllegalArgumentException("The admin role cannot be deleted.");
@@ -340,7 +355,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @throws IOException            when unable to save the configuration
      * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
      */
-    public void deleteFolderRole(String roleName) throws IOException {
+    public synchronized void deleteFolderRole(String roleName) throws IOException {
         FolderRole role = folderRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findAny().orElseThrow(() ->
@@ -357,7 +372,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             throw e;
         } finally {
             // TODO update jobACLs manually?
-            updateJobAcls();
+            generateNewJobAcls();
             aclCache.invalidateAll();
         }
     }
@@ -373,13 +388,12 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         this.globalRoles.addAll(globalRoles);
         this.folderRoles.addAll(folderRoles);
 
-        jobAcls = new ConcurrentHashMap<>();
         aclCache = CacheBuilder.newBuilder()
                        .expireAfterWrite(1, TimeUnit.HOURS)
                        .maximumSize(2048)
                        .build();
         generateNewGlobalAcl();
-        updateJobAcls();
+        generateNewJobAcls();
     }
 
     @Extension
