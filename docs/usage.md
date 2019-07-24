@@ -67,6 +67,13 @@ below.
 Just click the big red ❌ on the top right of the role you want to delete and
 you're done.
 
+## Inheritance of Folder Roles
+
+When you add a folder role that is applicable on a *parent* folder, the
+permissions granted by that role are applicable to all of its children.
+Therefore, all permissions granted to a folder for a user are applicable to
+all folders and jobs nested under it.
+
 ## Reporting issues
 
 Please create a ticket for any bug reports or feature requests on
