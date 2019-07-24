@@ -2,6 +2,7 @@ package io.jenkins.plugins.folderauth;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import hudson.Extension;
+import hudson.model.AbstractItem;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -22,12 +23,14 @@ import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
+import org.kohsuke.stapler.verb.GET;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -40,6 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Extension
 @ParametersAreNonnullByDefault
@@ -79,6 +83,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getFolderPermissions() {
         HashSet<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
+        groups.remove(PermissionGroup.get(Hudson.class));
         groups.remove(PermissionGroup.get(Computer.class));
         groups.remove(PermissionGroup.get(Permission.class));
         return getSafePermissions(groups);
@@ -262,12 +267,12 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     /**
      * Get all {@link AbstractFolder}s in the system
      *
-     * @return folders in the system
+     * @return full names of all {@link AbstractFolder}s in the system
      */
+    @GET
     @Nonnull
     @Restricted(NoExternalUse.class)
-    @SuppressWarnings("unused") // used by index.jelly
-    public List<AbstractFolder> getAllFolders() {
+    public JSONArray doGetAllFolders() {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         List<AbstractFolder> folders;
@@ -276,7 +281,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             folders = jenkins.getAllItems(AbstractFolder.class);
         }
 
-        return folders;
+        return JSONArray.fromObject(folders.stream().map(AbstractItem::getFullName).collect(Collectors.toList()));
     }
 
     /**

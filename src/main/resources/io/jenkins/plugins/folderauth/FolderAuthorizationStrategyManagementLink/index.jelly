@@ -4,6 +4,7 @@
         <st:include it="${app}" page="sidepanel.jelly" optional="true"/>
         <l:main-panel>
             <script src="${rootURL}/plugin/folder-auth/js/addrole.js"/>
+            <script src="${rootURL}/plugin/folder-auth/js/folders.js"/>
             <link rel="stylesheet" href="${rootURL}/plugin/folder-auth/css/folder-strategy.css" type="text/css"/>
             <div>
                 <h1>${%manageGlobalRoles}</h1>
@@ -133,12 +134,17 @@
                         </label>
                     </div>
                     <div class="form-row">
+                        <script>
+                            // asynchronously render folder names
+                            getFolders();
+                        </script>
                         <label class="form-label">
                             ${%applyOn}:
-                            <select name="folderNames" multiple="multiple" id="folder-select" class="form-control">
-                                <j:forEach items="${it.allFolders}" var="folder">
-                                    <option value="${folder.fullName}">${folder.fullName}</option>
-                                </j:forEach>
+                            <div id="loading-folders" class="loading">
+                                ${%loadingFolders}
+                            </div>
+                            <select name="folderNames" multiple="multiple" id="folder-select" class="form-control"
+                                    style="display: none;">
                             </select>
                         </label>
                     </div>
@@ -153,7 +159,10 @@
                         </select>
                     </label>
                     <div class="form-row">
-                        <button type="button" class="submit-button" onclick="addFolderRole();">${%addRole}</button>
+                        <button id="add-folder-role-button" type="button" class="submit-button" onclick="addFolderRole();"
+                                disabled="disabled">
+                            ${%addRole}
+                        </button>
                     </div>
                 </div>
             </div>
