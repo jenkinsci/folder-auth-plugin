@@ -62,7 +62,13 @@ below.
 2. Click the submit button.
 3. The role was assigned to the user!
 
-### Deleting Role
+**Note**: Apart from the user IDs provided by your security realm, Jenkins
+provides two groups, `authenticated` and `anonymous`, which as their names
+suggest, apply to authenticated and non-authenticated users, respectively.
+Therefore, if you assign a role to the `authenticated` sid, permissions would
+be granted to all logged-in users.
+
+### Deleting a Role
 
 Just click the big red ❌ on the top right of the role you want to delete and
 you're done.
