@@ -22,6 +22,8 @@ import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.acegisecurity.acls.sid.PrincipalSid;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -502,6 +504,50 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(2048)
                 .build();
+    }
+
+    /**
+     * Call this function when a folder gets deleted from Jenkins.
+     *
+     * @param fullName the full name of the {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}.
+     */
+    @Restricted(NoExternalUse.class)
+    public void onFolderDeleted(String fullName) {
+        folderRoles.parallelStream().forEach(role -> role.removeFolder(fullName));
+        updateJobAcls(true);
+        jobAclCache.invalidateAll();
+        try {
+            Jenkins.get().save();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Unable to update folder roles and save configuration when folder "
+                                         + fullName + " was deleted.", e);
+        }
+    }
+
+    /**
+     * Call this function when a folder gets renamed or relocated in Jenkins.
+     *
+     * @param oldFullName the old full name of the {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}
+     * @param newFullName the new full name of the {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}
+     */
+    @Restricted(NoExternalUse.class)
+    public void onFolderRenamed(String oldFullName, String newFullName) {
+        folderRoles.parallelStream().forEach(role -> {
+            if (role.getFolderNames().contains(newFullName)) {
+                role.removeFolder(oldFullName);
+                role.addFolder(newFullName);
+            }
+        });
+
+        updateJobAcls(true);
+        jobAclCache.invalidateAll();
+
+        try {
+            Jenkins.get().save();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Unable to update folder roles and save configuration when folder "
+                                         + oldFullName + " was renamed to " + newFullName + ".", e);
+        }
     }
 
     @Extension

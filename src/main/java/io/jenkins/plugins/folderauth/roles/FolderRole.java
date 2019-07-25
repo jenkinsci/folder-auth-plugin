@@ -1,6 +1,8 @@
 package io.jenkins.plugins.folderauth.roles;
 
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
@@ -16,7 +18,6 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
 
     @DataBoundConstructor
     @ParametersAreNonnullByDefault
-    @SuppressWarnings("WeakerAccess")
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders, Set<String> sids) {
         super(name, permissions);
         this.sids.addAll(sids);
@@ -56,6 +57,28 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     @Nonnull
     public Set<String> getFolderNames() {
         return Collections.unmodifiableSet(folders);
+    }
+
+    /**
+     * The role no longer remains valid on the given {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}
+     * identified by its full name.
+     * <p>
+     * Does not do anything if the role was not valid on the folder before the call to this function was made.
+     *
+     * @param fullName the full name of the folder that was deleted.
+     */
+    @Restricted(NoExternalUse.class)
+    public void removeFolder(String fullName) {
+        folders.remove(fullName);
+    }
+
+    /**
+     * Makes the role applicable on the given {@link com.cloudbees.hudson.plugins.folder.AbstractFolder} identified
+     * by its full name.
+     */
+    @Restricted(NoExternalUse.class)
+    public void addFolder(String fullName) {
+        folders.add(fullName);
     }
 
     /**
