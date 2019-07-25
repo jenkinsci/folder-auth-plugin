@@ -46,7 +46,7 @@ public class FolderBasedAuthorizationStrategyTest {
         jenkins.setSecurityRealm(jenkinsRule.createDummySecurityRealm());
 
         FolderBasedAuthorizationStrategy strategy = new FolderBasedAuthorizationStrategy(Collections.emptySet(),
-                Collections.emptySet());
+                Collections.emptySet(), Collections.emptySet());
         jenkins.setAuthorizationStrategy(strategy);
 
         final String adminRoleName = "adminRole";

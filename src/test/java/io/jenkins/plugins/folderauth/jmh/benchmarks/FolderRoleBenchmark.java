@@ -90,7 +90,8 @@ public class FolderRoleBenchmark {
                 }
             }
 
-            jenkins.setAuthorizationStrategy(new FolderBasedAuthorizationStrategy(globalRoles, folderRoles));
+            jenkins.setAuthorizationStrategy(new FolderBasedAuthorizationStrategy(globalRoles, folderRoles,
+                Collections.emptySet()));
         }
     }
 

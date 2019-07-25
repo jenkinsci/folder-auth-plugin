@@ -108,7 +108,7 @@ abstract class GlobalRoleBenchmarkState extends JmhBenchmarkState {
         }
 
         FolderBasedAuthorizationStrategy strategy = new FolderBasedAuthorizationStrategy(
-            globalRoles, Collections.emptySet());
+            globalRoles, Collections.emptySet(), Collections.emptySet());
         acl = strategy.getRootACL();
         assertFalse(acl.hasPermission(Objects.requireNonNull(User.getById("user3", true)).impersonate(),
             Item.CREATE));
