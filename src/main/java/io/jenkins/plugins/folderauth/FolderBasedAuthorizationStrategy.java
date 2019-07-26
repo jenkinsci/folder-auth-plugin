@@ -533,7 +533,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @Restricted(NoExternalUse.class)
     public void onFolderRenamed(String oldFullName, String newFullName) {
         folderRoles.parallelStream().forEach(role -> {
-            if (role.getFolderNames().contains(newFullName)) {
+            if (role.getFolderNames().contains(oldFullName)) {
                 role.removeFolder(oldFullName);
                 role.addFolder(newFullName);
             }
