@@ -80,8 +80,13 @@ permissions granted by that role are applicable to all of its children.
 Therefore, all permissions granted to a folder for a user are applicable to
 all folders and jobs nested under it.
 
-## Reporting issues
+## Using Agent Roles
 
-Please create a ticket for any bug reports or feature requests on
-[Jenkins JIRA](https://issues.jenkins-ci.org/) and add `folder-auth-plugin`
-as the 'Component'.
+Agent roles can be used to configure users' permissions for agents connected
+to Jenkins. Multiple agents can be selected when creating an agent role, just
+like with Folder roles. All users assigned to this role will get all
+permissions granted by an agent role for all agents on which this role is
+applicable.
+
+Unlike Folder Roles, there is no support for inheritance of Agent Roles
+because Jenkins does not support nesting of agents.
