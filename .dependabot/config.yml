@@ -5,7 +5,6 @@ update_configs:
     update_schedule: "weekly"
     default_reviewers:
       - "oleg-nenashev"
-      - "runzexia"
       - "AbhyudayaSharma"
     ignored_updates:
       - match:
