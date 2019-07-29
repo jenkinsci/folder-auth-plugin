@@ -11,41 +11,45 @@
                 <h2>
                     ${%currentGlobalRoles}
                 </h2>
-                <div class="role-container">
-                    <j:forEach items="${it.globalRoles}" var="globalRole" indexVar="index">
-                        <div class="role">
-                            ${%name}: ${globalRole.name}
-                            <br/>
-                            ${%sids}: ${globalRole.getSidsCommaSeparated()}
-                            <form action="${rootURL}/${it.urlName}/assignSidToGlobalRole" method="POST">
-                                <div class="form-row">
-                                    <label for="assign-sid-global-${index}" style="margin-right: 10px;">
-                                        ${%assignSid}
-                                    </label>
-                                    <input id="assign-sid-global-${index}" type="text" name="sid"/>
-                                    <input type="hidden" value="${globalRole.name}" name="roleName"/>
-                                    <input type="submit" style="margin-left: 10px;"/>
+                <div>
+                    <input type="text" placeholder="${%filterPlaceholder}" class="filter" id="globalRoleFilter"/>
+                </div>
+                <div>
+                    <div class="role-container" id="globalRoleContainer">
+                        <j:forEach items="${it.globalRoles}" var="globalRole" indexVar="index">
+                            <div class="role" roleName="${globalRole.name}">
+                                ${%name}: ${globalRole.name}
+                                <br/>
+                                ${%sids}: ${globalRole.getSidsCommaSeparated()}
+                                <form action="${rootURL}/${it.urlName}/assignSidToGlobalRole" method="POST">
+                                    <div class="form-row">
+                                        <label for="assign-sid-global-${index}" style="margin-right: 10px;">
+                                            ${%assignSid}
+                                        </label>
+                                        <input id="assign-sid-global-${index}" type="text" name="sid"/>
+                                        <input type="hidden" value="${globalRole.name}" name="roleName"/>
+                                        <input type="submit" style="margin-left: 10px;"/>
+                                    </div>
+                                </form>
+                                <br/>
+                                <button class="collapsible">${%viewPermissions}</button>
+                                <div class="collapsible-content">
+                                    <ul>
+                                        <j:forEach items="${globalRole.permissions}" var="wrapper">
+                                            <li tooltip="${wrapper.permission.description}">
+                                                ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                            </li>
+                                        </j:forEach>
+                                    </ul>
                                 </div>
-                            </form>
-                            <br/>
-                            <button class="collapsible">${%viewPermissions}</button>
-                            <div class="collapsible-content">
-                                <ul>
-                                    <j:forEach items="${globalRole.permissions}" var="wrapper">
-                                        <li tooltip="${wrapper.permission.description}">
-                                            ${wrapper.permission.group.title} | ${wrapper.permission.name}
-                                        </li>
-                                    </j:forEach>
-                                </ul>
+                                <form method="POST" action="${rootURL}/${it.urlName}/deleteGlobalRole"
+                                      onsubmit="return confirm('${%confirmDelete}');">
+                                    <input type="hidden" name="roleName" value="${globalRole.name}"/>
+                                    <input type="submit" value="X" class="delete-role"/>
+                                </form>
                             </div>
-                            <hr/>
-                            <form method="POST" action="${rootURL}/${it.urlName}/deleteGlobalRole"
-                                  onsubmit="return confirm('${%confirmDelete}');">
-                                <input type="hidden" name="roleName" value="${globalRole.name}"/>
-                                <input type="submit" value="X" class="delete-role"/>
-                            </form>
-                        </div>
-                    </j:forEach>
+                        </j:forEach>
+                    </div>
                 </div>
                 <h2>
                     ${%addGlobalRole}
@@ -81,47 +85,54 @@
                 <h1>
                     ${%manageFolderRoles}
                 </h1>
-                <h2>
-                    ${%currentFolderRoles}
-                </h2>
-                <div class="role-container">
-                    <j:forEach items="${it.folderRoles}" var="folderRole" indexVar="index">
-                        <div class="role">
-                            ${%name}: ${folderRole.name}
-                            <br/>
-                            ${%sids}: ${folderRole.getSidsCommaSeparated()}
-                            <br/>
-                            ${%folders}: ${folderRole.getFolderNamesCommaSeparated()}
-                            <br/>
-                            <form action="${rootURL}/${it.urlName}/assignSidToFolderRole" method="POST">
-                                <div class="form-row">
-                                    <label for="assign-sid-folder-${index}" style="margin-right: 10px;">
-                                        ${%assignSid}
-                                    </label>
-                                    <input id="assign-sid-folder-${index}" type="text" name="sid"/>
-                                    <input type="hidden" value="${folderRole.name}" name="roleName"/>
-                                    <input type="submit" style="margin-left: 10px;"/>
+                <j:set var="folderRoles" value="${it.folderRoles}"/>
+                <j:if test="${folderRoles.size() == 0}">
+                    <p>
+                        ${%emptyFolderRoles}
+                    </p>
+                </j:if>
+                <j:if test="${folderRoles.size() != 0}">
+                    <h2>
+                        ${%currentFolderRoles}
+                    </h2>
+                    <div class="role-container">
+                        <j:forEach items="${folderRoles}" var="folderRole" indexVar="index">
+                            <div class="role">
+                                ${%name}: ${folderRole.name}
+                                <br/>
+                                ${%sids}: ${folderRole.getSidsCommaSeparated()}
+                                <br/>
+                                ${%folders}: ${folderRole.getFolderNamesCommaSeparated()}
+                                <br/>
+                                <form action="${rootURL}/${it.urlName}/assignSidToFolderRole" method="POST">
+                                    <div class="form-row">
+                                        <label for="assign-sid-folder-${index}" style="margin-right: 10px;">
+                                            ${%assignSid}
+                                        </label>
+                                        <input id="assign-sid-folder-${index}" type="text" name="sid"/>
+                                        <input type="hidden" value="${folderRole.name}" name="roleName"/>
+                                        <input type="submit" style="margin-left: 10px;"/>
+                                    </div>
+                                </form>
+                                <button class="collapsible">${%viewPermissions}</button>
+                                <div class="collapsible-content">
+                                    <ul>
+                                        <j:forEach items="${folderRole.permissions}" var="wrapper">
+                                            <li tooltip="${wrapper.permission.description}">
+                                                ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                            </li>
+                                        </j:forEach>
+                                    </ul>
                                 </div>
-                            </form>
-                            <button class="collapsible">${%viewPermissions}</button>
-                            <div class="collapsible-content">
-                                <ul>
-                                    <j:forEach items="${folderRole.permissions}" var="wrapper">
-                                        <li tooltip="${wrapper.permission.description}">
-                                            ${wrapper.permission.group.title} | ${wrapper.permission.name}
-                                        </li>
-                                    </j:forEach>
-                                </ul>
+                                <form method="POST" action="${rootURL}/${it.urlName}/deleteFolderRole"
+                                      onsubmit="return confirm('${%confirmDelete}');">
+                                    <input type="hidden" name="roleName" value="${folderRole.name}"/>
+                                    <input type="submit" value="X" class="delete-role"/>
+                                </form>
                             </div>
-                            <hr/>
-                            <form method="POST" action="${rootURL}/${it.urlName}/deleteFolderRole"
-                                  onsubmit="return confirm('${%confirmDelete}');">
-                                <input type="hidden" name="roleName" value="${folderRole.name}"/>
-                                <input type="submit" value="X" class="delete-role"/>
-                            </form>
-                        </div>
-                    </j:forEach>
-                </div>
+                        </j:forEach>
+                    </div>
+                </j:if>
 
                 <h2>
                     ${%addFolderRole}
@@ -159,8 +170,8 @@
                         </select>
                     </label>
                     <div class="form-row">
-                        <button id="add-folder-role-button" type="button" class="submit-button" onclick="addFolderRole();"
-                                disabled="disabled">
+                        <button id="add-folder-role-button" type="button" class="submit-button"
+                                onclick="addFolderRole();" disabled="disabled">
                             ${%addRole}
                         </button>
                     </div>
@@ -173,47 +184,54 @@
                 <h1>
                     ${%manageAgentRoles}
                 </h1>
-                <h2>
-                    ${%currentAgentRoles}
-                </h2>
-                <div class="role-container">
-                    <j:forEach items="${it.agentRoles}" var="agentRole" indexVar="index">
-                        <div class="role">
-                            ${%name}: ${agentRole.name}
-                            <br/>
-                            ${%sids}: ${agentRole.getSidsCommaSeparated()}
-                            <br/>
-                            ${%agents}: ${agentRole.getAgentNamesCommaSeparated()}
-                            <br/>
-                            <form action="${rootURL}/${it.urlName}/assignSidToAgentRole" method="POST">
-                                <div class="form-row">
-                                    <label for="assign-sid-agent-${index}" style="margin-right: 10px;">
-                                        ${%assignSid}
-                                    </label>
-                                    <input id="assign-sid-agent-${index}" type="text" name="sid"/>
-                                    <input type="hidden" value="${agentRole.name}" name="roleName"/>
-                                    <input type="submit" style="margin-left: 10px;"/>
+                <j:set var="agentRoles" value="${it.agentRoles}"/>
+                <j:if test="${agentRoles.size() == 0}">
+                    <p>
+                        ${%emptyAgentRoles}
+                    </p>
+                </j:if>
+                <j:if test="${agentRoles.size() != 0}">
+                    <h2>
+                        ${%currentAgentRoles}
+                    </h2>
+                    <div class="role-container">
+                        <j:forEach items="${it.agentRoles}" var="agentRole" indexVar="index">
+                            <div class="role">
+                                ${%name}: ${agentRole.name}
+                                <br/>
+                                ${%sids}: ${agentRole.getSidsCommaSeparated()}
+                                <br/>
+                                ${%agents}: ${agentRole.getAgentNamesCommaSeparated()}
+                                <br/>
+                                <form action="${rootURL}/${it.urlName}/assignSidToAgentRole" method="POST">
+                                    <div class="form-row">
+                                        <label for="assign-sid-agent-${index}" style="margin-right: 10px;">
+                                            ${%assignSid}
+                                        </label>
+                                        <input id="assign-sid-agent-${index}" type="text" name="sid"/>
+                                        <input type="hidden" value="${agentRole.name}" name="roleName"/>
+                                        <input type="submit" style="margin-left: 10px;"/>
+                                    </div>
+                                </form>
+                                <button class="collapsible">${%viewPermissions}</button>
+                                <div class="collapsible-content">
+                                    <ul>
+                                        <j:forEach items="${agentRole.permissions}" var="wrapper">
+                                            <li tooltip="${wrapper.permission.description}">
+                                                ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                            </li>
+                                        </j:forEach>
+                                    </ul>
                                 </div>
-                            </form>
-                            <button class="collapsible">${%viewPermissions}</button>
-                            <div class="collapsible-content">
-                                <ul>
-                                    <j:forEach items="${agentRole.permissions}" var="wrapper">
-                                        <li tooltip="${wrapper.permission.description}">
-                                            ${wrapper.permission.group.title} | ${wrapper.permission.name}
-                                        </li>
-                                    </j:forEach>
-                                </ul>
+                                <form method="POST" action="${rootURL}/${it.urlName}/deleteAgentRole"
+                                      onsubmit="return confirm('${%confirmDelete}');">
+                                    <input type="hidden" name="roleName" value="${agentRole.name}"/>
+                                    <input type="submit" value="X" class="delete-role"/>
+                                </form>
                             </div>
-                            <hr/>
-                            <form method="POST" action="${rootURL}/${it.urlName}/deleteAgentRole"
-                                  onsubmit="return confirm('${%confirmDelete}');">
-                                <input type="hidden" name="roleName" value="${agentRole.name}"/>
-                                <input type="submit" value="X" class="delete-role"/>
-                            </form>
-                        </div>
-                    </j:forEach>
-                </div>
+                        </j:forEach>
+                    </div>
+                </j:if>
 
                 <h2>
                     ${%addAgentRole}
@@ -252,6 +270,7 @@
             </div>
 
             <script src="${rootURL}/plugin/folder-auth/js/collapsible.js"/>
+            <script src="${rootURL}/plugin/folder-auth/js/filter.js"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>
