@@ -90,3 +90,51 @@ applicable.
 
 Unlike Folder Roles, there is no support for inheritance of Agent Roles
 because Jenkins does not support nesting of agents.
+
+## Jenkins Configuration-as-Code Support
+
+This plugin supports configuration as code for hands-free setup of your
+Jenkins instance. The easiest way to get a configuration for your uses-case is
+to configure the plugin through the Web UI and then export the configuration
+as YAML and store it for later use.
+
+You can write the configuration manually too. As an example, a YAML
+configuration for this plugin typically looks like this:
+
+```yaml
+jenkins:
+  authorizationStrategy:
+    folderBased:
+      agentRoles:
+        - agents:
+            - "agent1"
+          name: "agentRole1"
+          permissions:
+            - id: "hudson.model.Computer.Configure"
+            - id: "hudson.model.Computer.Disconnect"
+          sids:
+            - "user1"
+      folderRoles:
+        - folders:
+            - "root"
+          name: "viewRoot"
+          permissions:
+            - id: "hudson.model.Item.Read"
+          sids:
+            - "user1"
+      globalRoles:
+        - name: "admin"
+          permissions:
+            - id: "hudson.model.Hudson.Administer"
+          sids:
+            - "admin"
+        - name: "read"
+          permissions:
+            - id: "hudson.model.Hudson.Read"
+          sids:
+            - "user1"
+```
+
+**Note**: You need to have [Configuration-as-Code](https://plugins.jenkins.io/configuration-as-code)
+plugin installed for using Jenkins Configuration-as-Code. The CasC plugin will
+**not** be installed when you install the Folder Auth plugin.
