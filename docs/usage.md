@@ -136,5 +136,6 @@ jenkins:
 ```
 
 **Note**: You need to have [Configuration-as-Code](https://plugins.jenkins.io/configuration-as-code)
-plugin installed for using Jenkins Configuration-as-Code. The CasC plugin will
-**not** be installed when you install the Folder Auth plugin.
+plugin ≥ [1.24](https://github.com/jenkinsci/configuration-as-code-plugin/releases/tag/configuration-as-code-1.24)
+installed for using Jenkins Configuration-as-Code with this plugin. The CasC
+plugin will **not** be installed when you install this plugin.
