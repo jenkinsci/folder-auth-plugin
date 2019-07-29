@@ -23,11 +23,11 @@
     </developers>
 
     <properties>
-        <revision>0.1-alpha-2</revision>
+        <revision>0.1-alpha-3</revision>
         <changelist>-SNAPSHOT</changelist>
         <jenkins.version>2.164.1</jenkins.version>
         <java.level>8</java.level>
-        <configuration-as-code.version>1.24-rc834.e55a938c5ddd</configuration-as-code.version>
+        <configuration-as-code.version>1.24</configuration-as-code.version>
     </properties>
 
     <repositories>

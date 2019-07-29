@@ -7,23 +7,6 @@ jenkins:
     - "Ping"
   authorizationStrategy:
     folderBased:
-      agentRoles:
-        - agents:
-            - "agent1"
-          name: "agentRole1"
-          permissions:
-            - id: "hudson.model.Computer.Configure"
-            - id: "hudson.model.Computer.Disconnect"
-          sids:
-            - "user1"
-      folderRoles:
-        - folders:
-            - "root"
-          name: "viewRoot"
-          permissions:
-            - id: "hudson.model.Item.Read"
-          sids:
-            - "user1"
       globalRoles:
         - name: "admin"
           permissions:

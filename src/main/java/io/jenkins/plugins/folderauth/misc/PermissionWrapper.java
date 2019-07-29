@@ -9,6 +9,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +54,7 @@ public final class PermissionWrapper {
      *
      * @return the {@link PermissionWrapper}
      */
+    @Nonnull
     @SuppressWarnings("unused")
     private Object readResolve() {
         permission = Permission.fromId(id);
@@ -65,6 +67,7 @@ public final class PermissionWrapper {
      *
      * @return the permission corresponding to this {@link PermissionWrapper}
      */
+    @Nonnull
     public Permission getPermission() {
         return permission;
     }
@@ -102,6 +105,7 @@ public final class PermissionWrapper {
      * @param permissions permissions to be wrapped up
      * @return a set containing a {@link PermissionWrapper} for each permission in {@code permissions}
      */
+    @Nonnull
     public static Set<PermissionWrapper> wrapPermissions(Permission... permissions) {
         return _wrapPermissions(Arrays.stream(permissions));
     }
@@ -112,10 +116,12 @@ public final class PermissionWrapper {
      * @param permissions permissions to be wrapped up
      * @return a set containing a {@link PermissionWrapper} for each permission in {@code permissions}
      */
+    @Nonnull
     public static Set<PermissionWrapper> wrapPermissions(Collection<Permission> permissions) {
         return _wrapPermissions(permissions.stream());
     }
 
+    @Nonnull
     private static Set<PermissionWrapper> _wrapPermissions(Stream<Permission> stream) {
         return stream
                 .map(Permission::getId)

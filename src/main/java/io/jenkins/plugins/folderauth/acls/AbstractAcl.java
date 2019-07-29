@@ -15,6 +15,40 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 abstract class AbstractAcl extends SidACL {
+
+    private static ConcurrentHashMap<Permission, Set<Permission>> implyingPermissionsCache = new ConcurrentHashMap<>();
+
+    static {
+        Permission.getAll().forEach(AbstractAcl::cacheImplyingPermissions);
+    }
+
+    private static Set<Permission> cacheImplyingPermissions(Permission permission) {
+        Set<Permission> implyingPermissions;
+
+        if (PermissionWrapper.DANGEROUS_PERMISSIONS.contains(permission)) {
+            // dangerous permissions should be deferred to Jenkins.ADMINISTER
+            implyingPermissions = getImplyingPermissions(Jenkins.ADMINISTER);
+        } else {
+            implyingPermissions = new HashSet<>();
+
+            for (Permission p = permission; p != null; p = p.impliedBy) {
+                implyingPermissions.add(p);
+            }
+        }
+
+        implyingPermissionsCache.put(permission, implyingPermissions);
+        return implyingPermissions;
+    }
+
+    private static Set<Permission> getImplyingPermissions(Permission p) {
+        Set<Permission> permissions = implyingPermissionsCache.get(p);
+        if (permissions != null) {
+            return permissions;
+        } else {
+            return cacheImplyingPermissions(p);
+        }
+    }
+
     /**
      * Maps each sid to the set of permissions assigned to it.
      * <p>
@@ -37,14 +71,5 @@ abstract class AbstractAcl extends SidACL {
         }
 
         return null;
-    }
-
-    // TODO Remove this when RoleMap has the implied permission cache (PR#83)
-    private static Set<Permission> getImplyingPermissions(Permission p) {
-        final Set<Permission> permissions = new HashSet<>();
-        for (; p != null; p = p.impliedBy) {
-            permissions.add(p);
-        }
-        return permissions;
     }
 }

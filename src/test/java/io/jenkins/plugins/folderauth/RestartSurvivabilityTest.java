@@ -2,12 +2,17 @@ package io.jenkins.plugins.folderauth;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.google.common.collect.ImmutableSet;
+import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.SlaveComputer;
 import hudson.util.XStream2;
+import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
@@ -18,6 +23,8 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,10 +43,11 @@ public class RestartSurvivabilityTest {
     public void shouldHaveSameConfigurationAfterRestart() {
         rule.addStep(new Statement() {
             @Override
-            public void evaluate() throws IOException {
+            public void evaluate() throws Exception {
                 rule.j.createProject(Folder.class, "folder");
                 rule.j.jenkins.setSecurityRealm(rule.j.createDummySecurityRealm());
-                rule.j.jenkins.setAuthorizationStrategy(getFolderBasedAuthorizationStrategy());
+                rule.j.jenkins.setAuthorizationStrategy(createNewFolderBasedAuthorizationStrategy());
+                rule.j.jenkins.addNode(rule.j.createSlave("foo", null, null));
                 checkConfiguration();
             }
         });
@@ -58,7 +66,7 @@ public class RestartSurvivabilityTest {
         });
     }
 
-    private FolderBasedAuthorizationStrategy getFolderBasedAuthorizationStrategy() {
+    private FolderBasedAuthorizationStrategy createNewFolderBasedAuthorizationStrategy() {
         Set<GlobalRole> globalRoles = new HashSet<>();
         globalRoles.add(new GlobalRole("admin", wrapPermissions(Jenkins.ADMINISTER), ImmutableSet.of("admin")));
         globalRoles.add(new GlobalRole("read", wrapPermissions(Jenkins.READ), ImmutableSet.of("authenticated")));
@@ -67,7 +75,11 @@ public class RestartSurvivabilityTest {
         folderRoles.add(new FolderRole("read", wrapPermissions(Item.READ), ImmutableSet.of("folder"),
             ImmutableSet.of("user1")));
 
-        return new FolderBasedAuthorizationStrategy(globalRoles, folderRoles);
+        Set<AgentRole> agentRoles = new HashSet<>();
+        agentRoles.add(new AgentRole("configureMaster", wrapPermissions(Computer.CONFIGURE),
+            Collections.singleton("foo"), Collections.singleton("user1")));
+
+        return new FolderBasedAuthorizationStrategy(globalRoles, folderRoles, agentRoles);
     }
 
     private void checkConfiguration() {
@@ -82,7 +94,12 @@ public class RestartSurvivabilityTest {
             assertTrue(jenkins.hasPermission(Jenkins.READ));
             assertTrue(folder.hasPermission(Item.READ));
             assertFalse(folder.hasPermission(Item.CONFIGURE));
-            assertFalse(Jenkins.get().hasPermission(Jenkins.ADMINISTER));
+            assertFalse(jenkins.hasPermission(Jenkins.ADMINISTER));
+
+            Computer computer = jenkins.getComputer("foo");
+            assertNotNull(computer);
+            assertTrue(computer.hasPermission(Computer.CONFIGURE));
+            assertFalse(computer.hasPermission(Computer.DELETE));
         }
 
         AuthorizationStrategy a = Jenkins.get().getAuthorizationStrategy();
@@ -90,5 +107,6 @@ public class RestartSurvivabilityTest {
         FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
         assertEquals(strategy.getGlobalRoles().size(), 2);
         assertEquals(strategy.getFolderRoles().size(), 1);
+        assertEquals(strategy.getAgentRoles().size(), 1);
     }
 }

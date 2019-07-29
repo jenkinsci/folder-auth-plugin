@@ -12,7 +12,6 @@ import java.util.Set;
  */
 public class GlobalRole extends AbstractRole {
     @DataBoundConstructor
-    @SuppressWarnings("WeakerAccess")
     public GlobalRole(String name, Set<PermissionWrapper> permissions, Set<String> sids) {
         super(name, permissions);
         this.sids.addAll(sids);
