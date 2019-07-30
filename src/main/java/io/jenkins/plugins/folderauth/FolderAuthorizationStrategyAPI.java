@@ -1,0 +1,204 @@
+package io.jenkins.plugins.folderauth;
+
+import hudson.security.AuthorizationStrategy;
+import io.jenkins.plugins.folderauth.roles.AgentRole;
+import io.jenkins.plugins.folderauth.roles.FolderRole;
+import io.jenkins.plugins.folderauth.roles.GlobalRole;
+import jenkins.model.Jenkins;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/**
+ * Public-facing methods for modifying {@link FolderBasedAuthorizationStrategy}.
+ * <p>
+ * These methods should only be called when {@link Jenkins#getAuthorizationStrategy()}} is
+ * {@link FolderBasedAuthorizationStrategy}. This class does not provide REST API methods.
+ *
+ * @see FolderAuthorizationStrategyManagementLink for REST API methods.
+ */
+@ParametersAreNonnullByDefault
+@SuppressWarnings("WeakerAccess")
+public class FolderAuthorizationStrategyAPI {
+
+    private FolderAuthorizationStrategyAPI() {
+    }
+
+    /**
+     * Checks the {@link AuthorizationStrategy} and runs the {@link Consumer} when it is an instance of
+     * {@link FolderBasedAuthorizationStrategy}.
+     * <p>
+     * All attempts to access the {@link FolderBasedAuthorizationStrategy} must go through this method
+     * for thread-safety.
+     *
+     * @param runner a function that consumes the current {@link FolderBasedAuthorizationStrategy} and returns a non
+     *               null {@link FolderBasedAuthorizationStrategy} object. The object may be the same as the one
+     *               consumed if no modification was needed.
+     * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is not
+     *                               {@link FolderBasedAuthorizationStrategy}
+     */
+    private synchronized static void run(Function<FolderBasedAuthorizationStrategy, FolderBasedAuthorizationStrategy> runner) {
+        Jenkins jenkins = Jenkins.get();
+        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
+        if (strategy instanceof FolderBasedAuthorizationStrategy) {
+            FolderBasedAuthorizationStrategy newStrategy = runner.apply((FolderBasedAuthorizationStrategy) strategy);
+            jenkins.setAuthorizationStrategy(newStrategy);
+        } else {
+            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the" + " current authorization strategy");
+        }
+    }
+
+    /**
+     * Adds a {@link GlobalRole} to the {@link FolderBasedAuthorizationStrategy}.
+     *
+     * @param role the role to be added.
+     */
+    public static void addGlobalRole(GlobalRole role) {
+        run(strategy -> {
+            Set<GlobalRole> globalRoles = new HashSet<>(strategy.getGlobalRoles());
+            globalRoles.add(role);
+            return new FolderBasedAuthorizationStrategy(globalRoles, strategy.getFolderRoles(), strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Adds a {@link FolderRole} to the {@link FolderBasedAuthorizationStrategy}.
+     *
+     * @param role the role to be added.
+     */
+    public static void addFolderRole(FolderRole role) {
+        run(strategy -> {
+            Set<FolderRole> folderRoles = new HashSet<>(strategy.getFolderRoles());
+            folderRoles.add(role);
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), folderRoles, strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Adds an {@link AgentRole} to the {@link FolderBasedAuthorizationStrategy}.
+     *
+     * @param role the role to be added.
+     */
+    public static void addAgentRole(AgentRole role) {
+        run(strategy -> {
+            Set<AgentRole> agentRoles = new HashSet<>(strategy.getAgentRoles());
+            agentRoles.add(role);
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
+        });
+    }
+
+    /**
+     * Assigns the {@code sid} to the {@link GlobalRole} identified by {@code roleName}.
+     *
+     * @param sid      this sid will be assigned to the global role with the name equal to {@code roleName}.
+     * @param roleName the name of the global role
+     * @throws IllegalArgumentException when no global role with name equal to {@code roleName} exists
+     */
+    public static void assignSidToGlobalRole(String sid, String roleName) {
+        run(strategy -> {
+            Set<GlobalRole> globalRoles = new HashSet<>(strategy.getGlobalRoles());
+            GlobalRole role = globalRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No global role with name = \"" + roleName + "\" exists"));
+            HashSet<String> newSids = new HashSet<>(role.getSids());
+            newSids.add(sid);
+            globalRoles.remove(role);
+            globalRoles.add(new GlobalRole(role.getName(), role.getPermissions(), newSids));
+            return new FolderBasedAuthorizationStrategy(globalRoles, strategy.getFolderRoles(), strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Assigns the {@code sid} to the {@link AgentRole} identified by {@code roleName}.
+     *
+     * @param sid      this sid will be assigned to the {@link AgentRole} with the name equal to {@code roleName}.
+     * @param roleName the name of the agent role
+     * @throws IllegalArgumentException when no agent role with name equal to {@code roleName} exists
+     */
+    public static void assignSidToAgentRole(String sid, String roleName) {
+        run(strategy -> {
+            Set<AgentRole> agentRoles = new HashSet<>(strategy.getAgentRoles());
+            AgentRole role = agentRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No agent role with name = \"" + roleName + "\" exists"));
+            HashSet<String> newSids = new HashSet<>(role.getSids());
+            newSids.add(sid);
+            agentRoles.remove(role);
+            agentRoles.add(new AgentRole(role.getName(), role.getPermissions(), role.getAgents(), newSids));
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
+        });
+    }
+
+    /**
+     * Assigns the {@code sid} to the {@link FolderRole} identified by {@code roleName}.
+     *
+     * @param sid      this sid will be assigned to the {@link FolderRole} with the name equal to {@code roleName}.
+     * @param roleName the name of the folder role
+     * @throws IllegalArgumentException when no folder role with name equal to {@code roleName} exists
+     */
+    public static void assignSidToFolderRole(String sid, String roleName) {
+        run(strategy -> {
+            Set<FolderRole> folderRoles = new HashSet<>(strategy.getFolderRoles());
+            FolderRole role = folderRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No folder role with name = \"" + roleName + "\" exists"));
+            HashSet<String> newSids = new HashSet<>(role.getSids());
+            newSids.add(sid);
+            folderRoles.remove(role);
+            folderRoles.add(new FolderRole(role.getName(), role.getPermissions(), role.getFolderNames(), newSids));
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), folderRoles, strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Deletes the {@link GlobalRole} with name equal to {@code roleName}.
+     *
+     * @param roleName the name of the role to be deleted
+     * @throws IllegalArgumentException when no global role with name equal to {@code roleName} exists
+     */
+    public static void deleteGlobalRole(String roleName) {
+        if (roleName.equals("admin")) {
+            throw new IllegalArgumentException("Cannot delete the admin role.");
+        }
+
+        run(strategy -> {
+            Set<GlobalRole> globalRoles = new HashSet<>(strategy.getGlobalRoles());
+            GlobalRole role = globalRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No global role with name = \"" + roleName + "\" exists"));
+            globalRoles.remove(role);
+            return new FolderBasedAuthorizationStrategy(globalRoles, strategy.getFolderRoles(), strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Deletes the {@link FolderRole} with name equal to {@code roleName}.
+     *
+     * @param roleName the name of the role to be deleted
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists
+     */
+    public static void deleteFolderRole(String roleName) {
+        run(strategy -> {
+            Set<FolderRole> folderRoles = new HashSet<>(strategy.getFolderRoles());
+            FolderRole role = folderRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No folder role with name = \"" + roleName + "\" exists"));
+            folderRoles.remove(role);
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), folderRoles, strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Deletes the {@link AgentRole} with name equal to {@code roleName}.
+     *
+     * @param roleName the name of the role to be deleted
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists
+     */
+    public static void deleteAgentRole(String roleName) {
+        run(strategy -> {
+            Set<AgentRole> agentRoles = new HashSet<>(strategy.getAgentRoles());
+            AgentRole role = agentRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No agent role with name = \"" + roleName + "\" exists"));
+            agentRoles.remove(role);
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
+        });
+    }
+}

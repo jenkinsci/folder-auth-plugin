@@ -12,8 +12,8 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SidACL;
-import io.jenkins.plugins.folderauth.acls.GlobalAclImpl;
 import io.jenkins.plugins.folderauth.acls.GenericAclImpl;
+import io.jenkins.plugins.folderauth.acls.GlobalAclImpl;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import io.jenkins.plugins.folderauth.roles.AgentRole;
@@ -28,26 +28,39 @@ import org.kohsuke.stapler.StaplerRequest;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * An {@link AuthorizationStrategy} that controls access to {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}s
+ * through {@link FolderRole}s, to {@link Computer}s through {@link AgentRole}s. Also provides global permissions
+ * through {@link GlobalRole}s.
+ * <p></p>
+ * All objects of this class are immutable. To modify the data for this strategy,
+ * please use the {@link FolderAuthorizationStrategyAPI}.
+ *
+ * @see FolderAuthorizationStrategyAPI for modifying the roles
+ * @see FolderAuthorizationStrategyManagementLink for REST API methods
+ */
 @ParametersAreNonnullByDefault
 public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
-    private static final Logger LOGGER = Logger.getLogger(FolderBasedAuthorizationStrategy.class.getName());
     private static final String ADMIN_ROLE_NAME = "admin";
     private static final String FOLDER_SEPARATOR = "/";
-    private Set<AgentRole> agentRoles;
-    private Set<GlobalRole> globalRoles;
-    private Set<FolderRole> folderRoles;
+
+    private final Set<AgentRole> agentRoles;
+    private final Set<GlobalRole> globalRoles;
+    private final Set<FolderRole> folderRoles;
+
+    /**
+     * An {@link ACL} that works only on {@link #globalRoles}.
+     * <p>
+     * All other {@link ACL} should inherit from this {@link ACL}.
+     */
     private transient GlobalAclImpl globalAcl;
     /**
      * Maps full name of jobs to their respective {@link ACL}s. The {@link ACL}s here do not
@@ -69,27 +82,20 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @DataBoundConstructor
     public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles,
                                             Set<AgentRole> agentRoles) {
-        init(globalRoles, folderRoles, agentRoles);
-    }
+        this.agentRoles = new HashSet<>(agentRoles);
+        this.globalRoles = new HashSet<>(globalRoles);
+        this.folderRoles = new HashSet<>(folderRoles);
 
-    /**
-     * This constructor should be used only for XStream serialization and does not call {@link #init(Set, Set, Set)}.
-     *
-     * @param globalRoles global roles to be serialized
-     * @param folderRoles folder roles to be serialized
-     * @param agentRoles agent roles to be serialized
-     */
-    private FolderBasedAuthorizationStrategy(HashSet<GlobalRole> globalRoles, HashSet<FolderRole> folderRoles,
-                                             HashSet<AgentRole> agentRoles) {
-        this.globalRoles = globalRoles;
-        this.folderRoles = folderRoles;
-        this.agentRoles = agentRoles;
+        // the sets above should NOT be modified. They are not Collections.unmodifiableSet()
+        // because that complicates the serialized XML and add unnecessary nesting.
+
+        init();
     }
 
     /**
      * Clears and recalculates {@code jobAcls}.
      */
-    private synchronized void updateJobAcls() {
+    private void updateJobAcls() {
         jobAcls.clear();
 
         for (FolderRole role : folderRoles) {
@@ -105,6 +111,11 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return an {@link ACL} formed using just globalRoles
+     */
     @Nonnull
     @Override
     public GlobalAclImpl getRootACL() {
@@ -119,23 +130,8 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @Nonnull
     @SuppressWarnings("unused")
     private FolderBasedAuthorizationStrategy readResolve() {
-        init(globalRoles, folderRoles, agentRoles);
+        init();
         return this;
-    }
-
-    /**
-     * Uses {@link #FolderBasedAuthorizationStrategy(HashSet, HashSet, HashSet)} to
-     * create a proxy {@link FolderBasedAuthorizationStrategy} to be serialized.
-     *
-     * @return a proxy {@link FolderBasedAuthorizationStrategy} only for serialization.
-     * @see #FolderBasedAuthorizationStrategy(HashSet, HashSet, HashSet)
-     */
-    @Nonnull
-    @SuppressWarnings("unused")
-    private FolderBasedAuthorizationStrategy writeReplace() {
-        // Return a temporary FolderBasedAuthorizationStrategy that uses HashSets for simpler serialization
-        return new FolderBasedAuthorizationStrategy(new HashSet<>(globalRoles), new HashSet<>(folderRoles),
-            new HashSet<>(agentRoles));
     }
 
     /**
@@ -145,7 +141,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     @Nonnull
     @Override
-    public SidACL getACL(@Nonnull Job<?, ?> project) {
+    public SidACL getACL(Job<?, ?> project) {
         return getACL((AbstractItem) project);
     }
 
@@ -154,7 +150,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     @Nonnull
     @Override
-    public SidACL getACL(@Nonnull AbstractItem item) {
+    public SidACL getACL(AbstractItem item) {
         String fullName = item.getFullName();
         SidACL acl = jobAclCache.getIfPresent(fullName);
 
@@ -209,61 +205,24 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         return Collections.unmodifiableCollection(groups);
     }
 
-    private synchronized void generateNewGlobalAcl() {
-        globalAcl = new GlobalAclImpl(globalRoles);
-    }
-
-    public void addGlobalRole(@Nonnull GlobalRole globalRole) throws IOException {
-        globalRoles.add(globalRole);
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save config file, not adding global role", e);
-            globalRoles.remove(globalRole);
-            throw e;
-        } finally {
-            generateNewGlobalAcl();
-            jobAclCache.invalidateAll();
-        }
-    }
-
+    /**
+     * Returns the {@link GlobalRole}s on which this {@link AuthorizationStrategy} works.
+     *
+     * @return set of {@link GlobalRole}s on which this {@link AuthorizationStrategy} works.
+     */
     @Nonnull
     public Set<GlobalRole> getGlobalRoles() {
         return Collections.unmodifiableSet(globalRoles);
     }
 
+    /**
+     * Returns the {@link AgentRole}s on which this {@link AuthorizationStrategy} works.
+     *
+     * @return set of {@link AgentRole}s on which this {@link AuthorizationStrategy} works.
+     */
     @Nonnull
     public Set<AgentRole> getAgentRoles() {
         return Collections.unmodifiableSet(agentRoles);
-    }
-
-    /**
-     * Assigns SID to a {@link GlobalRole}.
-     *
-     * @param roleName the name of the {@link GlobalRole}
-     * @param sid      the sid to be assigned
-     * @throws IOException            when unable to save the configuration to disk
-     * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
-     */
-    public void assignSidToGlobalRole(String roleName, String sid) throws IOException {
-        GlobalRole role = globalRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No GlobalRole with the " + "name " + roleName + "exists."));
-
-        role.assignSids(sid);
-
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save config file, not assigning the sids.", e);
-            role.unassignSids(sid);
-            throw e;
-        } finally {
-            generateNewGlobalAcl();
-            // inherited jobAcls depend on globalAcl
-            jobAclCache.invalidateAll();
-        }
     }
 
     /**
@@ -277,103 +236,6 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * Adds a FolderRole to this strategy
-     *
-     * @param folderRole the {@link FolderRole} to be added
-     * @throws IOException when unable to save configuration to disk
-     */
-    public void addFolderRole(@Nonnull FolderRole folderRole) throws IOException {
-        folderRoles.add(folderRole);
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save configuration when adding folder role.", e);
-            folderRoles.remove(folderRole);
-            throw e;
-        } finally {
-            jobAclCache.invalidateAll();
-            updateAclForFolderRole(folderRole);
-        }
-    }
-
-    /**
-     * Adds an {@link AgentRole} to this strategy
-     *
-     * @param agentRole the {@link FolderRole} to be added
-     * @throws IOException when unable to save configuration to disk
-     */
-    public void addAgentRole(@Nonnull AgentRole agentRole) throws IOException {
-        agentRoles.add(agentRole);
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save configuration when adding agent role.", e);
-            agentRoles.remove(agentRole);
-            throw e;
-        } finally {
-            updateAclForAgentRole(agentRole);
-        }
-    }
-
-    /**
-     * Assigns a SID to a {@link FolderRole}.
-     *
-     * @param roleName the name of the {@link FolderRole}
-     * @param sid      the sid to be assigned
-     * @throws IOException            when unable to save the configuration to disk
-     * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
-     */
-    public void assignSidToFolderRole(String roleName, String sid) throws IOException {
-        FolderRole role = folderRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findAny().orElseThrow(() ->
-                     new NoSuchElementException("No FolderRole with the name " + roleName + " exists."));
-
-        role.assignSids(sid);
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save config file, not assigning the sids.", e);
-            role.unassignSids(sid);
-            throw e;
-        } finally {
-            // no cache invalidation required here because the inheritance of
-            // folder roles does not change and we're directly modifying the ACL
-            // whose references are kept inside the inheriting SidACL.
-            updateAclForFolderRole(role);
-        }
-    }
-
-    /**
-     * Assigns a SID to an {@link AgentRole}.
-     *
-     * @param roleName the name of the {@link FolderRole}
-     * @param sid      the sid to be assigned
-     * @throws IOException            when unable to save the configuration to disk
-     * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
-     */
-    public void assignSidToAgentRole(String roleName, String sid) throws IOException {
-        AgentRole role = agentRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No AgentRole with the name " + roleName + " exists."));
-
-        role.assignSids(sid);
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save config file, not assigning the sids.", e);
-            role.unassignSids(sid);
-            throw e;
-        } finally {
-            // no cache invalidation required here because the inheritance of
-            // folder roles does not change and we're directly modifying the ACL
-            // whose references are kept inside the inheriting SidACL.
-            updateAclForAgentRole(role);
-        }
-    }
-
-    /**
      * Updates the ACL for the folder role
      * <p>
      * <b>Note: does not invalidate the cache</b>
@@ -382,7 +244,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @param role the role to be updated
      */
-    private void updateAclForFolderRole(@Nonnull FolderRole role) {
+    private void updateAclForFolderRole(FolderRole role) {
         for (String name : role.getFolderNames()) {
             updateGenericAcl(name, jobAcls, role);
         }
@@ -397,7 +259,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @param role the role to be updated
      */
-    private void updateAclForAgentRole(@Nonnull AgentRole role) {
+    private void updateAclForAgentRole(AgentRole role) {
         for (String agent : role.getAgents()) {
             updateGenericAcl(agent, agentAcls, role);
         }
@@ -409,126 +271,26 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             acl = new GenericAclImpl();
         }
         acl.assignPermissions(role.getSids(),
-                role.getPermissions().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
+            role.getPermissions().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
         acls.put(fullName, acl);
     }
 
     /**
-     * Deletes the global role identified by its name.
-     *
-     * @param roleName the name of the role to be deleted
-     * @throws IOException              when unable to save the configuration
-     * @throws NoSuchElementException   when no {@link GlobalRole} with name equal to {@code roleName} exists
-     * @throws IllegalArgumentException when trying to delete the admin role
-     */
-    public void deleteGlobalRole(String roleName) throws IOException {
-        if (roleName.equals(ADMIN_ROLE_NAME)) {
-            // the admin role cannot be deleted
-            throw new IllegalArgumentException("The admin role cannot be deleted.");
-        }
-
-        GlobalRole role = globalRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No GlobalRole with the name " + roleName + " exists."));
-
-        globalRoles.remove(role);
-
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save the config when deleting global role. " +
-                    "The role was not deleted.", e);
-            globalRoles.add(role);
-            throw e;
-        } finally {
-            generateNewGlobalAcl();
-        }
-    }
-
-    /**
-     * Deletes the folder role identified by its name.
-     *
-     * @param roleName the name of the role to be deleted
-     * @throws IOException            when unable to save the configuration
-     * @throws NoSuchElementException when no {@link FolderRole} with name equal to {@code roleName} exists
-     */
-    public void deleteFolderRole(String roleName) throws IOException {
-        FolderRole role = folderRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No FolderRole with the name " + roleName + " exists."));
-
-        folderRoles.remove(role);
-
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save the config when deleting folder role. " +
-                    "The role was not deleted.", e);
-            folderRoles.add(role);
-            throw e;
-        } finally {
-            // TODO update jobACLs manually?
-            updateJobAcls();
-            jobAclCache.invalidateAll();
-        }
-    }
-
-    /**
      * Initializes the cache, generates ACLs and makes the {@link FolderBasedAuthorizationStrategy}
-     * ready for work.
+     * ready to work.
      */
-    private void init(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles,
-                      Set<AgentRole> agentRoles) {
-        this.globalRoles = ConcurrentHashMap.newKeySet();
-        this.folderRoles = ConcurrentHashMap.newKeySet();
-        this.agentRoles = ConcurrentHashMap.newKeySet();
-
-        this.globalRoles.addAll(globalRoles);
-        this.folderRoles.addAll(folderRoles);
-        this.agentRoles.addAll(agentRoles);
-
+    private void init() {
         jobAcls = new ConcurrentHashMap<>();
         agentAcls = new ConcurrentHashMap<>();
 
         jobAclCache = CacheBuilder.newBuilder()
-                       .expireAfterWrite(1, TimeUnit.HOURS)
-                       .maximumSize(2048)
-                       .build();
+                          .expireAfterWrite(1, TimeUnit.HOURS)
+                          .maximumSize(2048)
+                          .build();
 
-        generateNewGlobalAcl();
+        globalAcl = new GlobalAclImpl(globalRoles);
         updateJobAcls();
         updateAgentAcls();
-    }
-
-    /**
-     * Deletes the {@link AgentRole} identified by its name.
-     *
-     * @param roleName the name of the role to be deleted
-     * @throws IOException            when unable to save the configuration
-     * @throws NoSuchElementException when no {@link AgentRole} with name equal to {@code roleName} exists
-     */
-    public void deleteAgentRole(String roleName) throws IOException {
-        AgentRole role = agentRoles.stream()
-                             .filter(r -> r.getName().equals(roleName))
-                             .findAny().orElseThrow(() ->
-                                  new NoSuchElementException("No AgentRole with the name " + roleName + " exists."));
-
-        agentRoles.remove(role);
-
-        try {
-            Jenkins.get().save();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Unable to save the config when deleting agent role. " +
-                                         "The role was not deleted.", e);
-            agentRoles.add(role);
-            throw e;
-        } finally {
-            // TODO update jobACLs manually?
-            updateJobAcls();
-            jobAclCache.invalidateAll();
-        }
     }
 
     @Extension
@@ -557,8 +319,8 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
                 Set<PermissionWrapper> adminPermissions = PermissionWrapper.wrapPermissions(
                     FolderAuthorizationStrategyManagementLink.getSafePermissions(groups));
 
-                GlobalRole adminRole = new GlobalRole(ADMIN_ROLE_NAME, adminPermissions);
-                adminRole.assignSids(new PrincipalSid(Jenkins.getAuthentication()).getPrincipal());
+                GlobalRole adminRole = new GlobalRole(ADMIN_ROLE_NAME, adminPermissions,
+                    Collections.singleton(new PrincipalSid(Jenkins.getAuthentication()).getPrincipal()));
 
                 return new FolderBasedAuthorizationStrategy(Collections.singleton(adminRole), Collections.emptySet(),
                     Collections.emptySet());
