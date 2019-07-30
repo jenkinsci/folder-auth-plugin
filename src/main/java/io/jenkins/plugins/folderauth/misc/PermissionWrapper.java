@@ -10,6 +10,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
  * A wrapper for efficient serialization of a {@link Permission}
  * when stored as a part of an {@link AbstractRole}.
  */
+@ParametersAreNonnullByDefault
 public final class PermissionWrapper {
     // should've been final but needs to be setup when the
     // object is deserialized from the XML config
@@ -41,7 +43,7 @@ public final class PermissionWrapper {
      * @param id the id of the permission this {@link PermissionWrapper} contains.
      */
     @DataBoundConstructor
-    public PermissionWrapper(@Nonnull String id) {
+    public PermissionWrapper(String id) {
         this.id = id;
         permission = Permission.fromId(id);
         checkPermission();

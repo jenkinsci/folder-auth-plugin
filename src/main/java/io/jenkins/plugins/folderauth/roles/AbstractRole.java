@@ -5,9 +5,9 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -36,11 +36,30 @@ public abstract class AbstractRole {
     @Nonnull
     protected final Set<String> sids;
 
-    @ParametersAreNonnullByDefault
     public AbstractRole(String name, Set<PermissionWrapper> permissionWrappers) {
         this.name = name;
         this.sids = ConcurrentHashMap.newKeySet();
         this.permissionWrappers = Collections.unmodifiableSet(permissionWrappers);
+    }
+
+    /**
+     * Constructor for an {@link AbstractRole} that does not use thread-safe constructs.
+     * <p>
+     * Use only when serializing the object. The set of Sids and the unmodifiable set of
+     * permissions is changed to a {@link HashSet} for simpler serialization
+     *
+     * @param name        the names of role
+     * @param permissions the permissions granted by this role
+     * @param sids        the sids to be assigned to this role
+     */
+    AbstractRole(String name, Set<PermissionWrapper> permissions, Set<String> sids) {
+        this.name = name;
+        this.sids = new HashSet<>(sids);
+
+        // Permissions are stored in an unmodifiable set. If an unmodifiable set was already
+        // provided, the set would be wrapped up again resulting in unnecessary nesting in
+        // the XML produced during serialization. This simplifies it.
+        this.permissionWrappers = new HashSet<>(permissions);
     }
 
     /**

@@ -45,20 +45,20 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     private static final Logger LOGGER = Logger.getLogger(FolderBasedAuthorizationStrategy.class.getName());
     private static final String ADMIN_ROLE_NAME = "admin";
     private static final String FOLDER_SEPARATOR = "/";
-    private final Set<AgentRole> agentRoles;
-    private final Set<GlobalRole> globalRoles;
-    private final Set<FolderRole> folderRoles;
+    private Set<AgentRole> agentRoles;
+    private Set<GlobalRole> globalRoles;
+    private Set<FolderRole> folderRoles;
     private transient GlobalAclImpl globalAcl;
     /**
      * Maps full name of jobs to their respective {@link ACL}s. The {@link ACL}s here do not
      * get inheritance from their parents.
      */
-    private transient ConcurrentHashMap<String, GenericAclImpl> jobAcls = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, GenericAclImpl> jobAcls;
     /**
      * Maps full name of the Agents to their respective {@link ACL}s. Inheritance is not needed here
      * because Agents are not nestable.
      */
-    private transient ConcurrentHashMap<String, GenericAclImpl> agentAcls = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, GenericAclImpl> agentAcls;
     /**
      * Contains the ACLs for projects that do not need any further inheritance.
      * <p>
@@ -69,29 +69,28 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @DataBoundConstructor
     public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles,
                                             Set<AgentRole> agentRoles) {
-        this.agentRoles = ConcurrentHashMap.newKeySet();
-        this.globalRoles = ConcurrentHashMap.newKeySet();
-        this.folderRoles = ConcurrentHashMap.newKeySet();
-
-        this.globalRoles.addAll(globalRoles);
-        this.folderRoles.addAll(folderRoles);
-        this.agentRoles.addAll(agentRoles);
-
-        initCache();
-        generateNewGlobalAcl();
-        updateJobAcls(true);
-        updateAgentAcls();
+        init(globalRoles, folderRoles, agentRoles);
     }
 
     /**
-     * Recalculates {@code jobAcls}.
+     * This constructor should be used only for XStream serialization and does not call {@link #init(Set, Set, Set)}.
      *
-     * @param doClear if true, jobAcls will be cleared
+     * @param globalRoles global roles to be serialized
+     * @param folderRoles folder roles to be serialized
+     * @param agentRoles agent roles to be serialized
      */
-    private synchronized void updateJobAcls(boolean doClear) {
-        if (doClear) {
-            jobAcls.clear();
-        }
+    private FolderBasedAuthorizationStrategy(HashSet<GlobalRole> globalRoles, HashSet<FolderRole> folderRoles,
+                                             HashSet<AgentRole> agentRoles) {
+        this.globalRoles = globalRoles;
+        this.folderRoles = folderRoles;
+        this.agentRoles = agentRoles;
+    }
+
+    /**
+     * Clears and recalculates {@code jobAcls}.
+     */
+    private synchronized void updateJobAcls() {
+        jobAcls.clear();
 
         for (FolderRole role : folderRoles) {
             updateAclForFolderRole(role);
@@ -119,13 +118,24 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     @Nonnull
     @SuppressWarnings("unused")
-    protected Object readResolve() {
-        jobAcls = new ConcurrentHashMap<>();
-        agentAcls = new ConcurrentHashMap<>();
-        initCache();
-        generateNewGlobalAcl();
-        updateJobAcls(true);
+    private FolderBasedAuthorizationStrategy readResolve() {
+        init(globalRoles, folderRoles, agentRoles);
         return this;
+    }
+
+    /**
+     * Uses {@link #FolderBasedAuthorizationStrategy(HashSet, HashSet, HashSet)} to
+     * create a proxy {@link FolderBasedAuthorizationStrategy} to be serialized.
+     *
+     * @return a proxy {@link FolderBasedAuthorizationStrategy} only for serialization.
+     * @see #FolderBasedAuthorizationStrategy(HashSet, HashSet, HashSet)
+     */
+    @Nonnull
+    @SuppressWarnings("unused")
+    private FolderBasedAuthorizationStrategy writeReplace() {
+        // Return a temporary FolderBasedAuthorizationStrategy that uses HashSets for simpler serialization
+        return new FolderBasedAuthorizationStrategy(new HashSet<>(globalRoles), new HashSet<>(folderRoles),
+            new HashSet<>(agentRoles));
     }
 
     /**
@@ -193,9 +203,9 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @Override
     public Collection<String> getGroups() {
         Set<String> groups = ConcurrentHashMap.newKeySet();
+        agentRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
         globalRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
         folderRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
-        agentRoles.stream().parallel().map(AbstractRole::getSids).forEach(groups::addAll);
         return Collections.unmodifiableCollection(groups);
     }
 
@@ -236,7 +246,6 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
      */
     public void assignSidToGlobalRole(String roleName, String sid) throws IOException {
-        // TODO maintain an index of roles according to their names
         GlobalRole role = globalRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findAny().orElseThrow(() ->
@@ -293,7 +302,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @param agentRole the {@link FolderRole} to be added
      * @throws IOException when unable to save configuration to disk
      */
-    public void addFolderRole(@Nonnull AgentRole agentRole) throws IOException {
+    public void addAgentRole(@Nonnull AgentRole agentRole) throws IOException {
         agentRoles.add(agentRole);
         try {
             Jenkins.get().save();
@@ -315,11 +324,10 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
      */
     public void assignSidToFolderRole(String roleName, String sid) throws IOException {
-        // TODO maintain an index of roles according to their names
         FolderRole role = folderRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No FolderRole with the name " + roleName + " exists."));
+                     new NoSuchElementException("No FolderRole with the name " + roleName + " exists."));
 
         role.assignSids(sid);
         try {
@@ -337,7 +345,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * Assigns a SID to a {@link FolderRole}.
+     * Assigns a SID to an {@link AgentRole}.
      *
      * @param roleName the name of the {@link FolderRole}
      * @param sid      the sid to be assigned
@@ -345,7 +353,6 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      * @throws NoSuchElementException when no {@link GlobalRole} with name equal to {@code roleName} exists
      */
     public void assignSidToAgentRole(String roleName, String sid) throws IOException {
-        // TODO maintain an index of roles according to their names
         AgentRole role = agentRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findAny().orElseThrow(() ->
@@ -463,9 +470,36 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             throw e;
         } finally {
             // TODO update jobACLs manually?
-            updateJobAcls(true);
+            updateJobAcls();
             jobAclCache.invalidateAll();
         }
+    }
+
+    /**
+     * Initializes the cache, generates ACLs and makes the {@link FolderBasedAuthorizationStrategy}
+     * ready for work.
+     */
+    private void init(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles,
+                      Set<AgentRole> agentRoles) {
+        this.globalRoles = ConcurrentHashMap.newKeySet();
+        this.folderRoles = ConcurrentHashMap.newKeySet();
+        this.agentRoles = ConcurrentHashMap.newKeySet();
+
+        this.globalRoles.addAll(globalRoles);
+        this.folderRoles.addAll(folderRoles);
+        this.agentRoles.addAll(agentRoles);
+
+        jobAcls = new ConcurrentHashMap<>();
+        agentAcls = new ConcurrentHashMap<>();
+
+        jobAclCache = CacheBuilder.newBuilder()
+                       .expireAfterWrite(1, TimeUnit.HOURS)
+                       .maximumSize(2048)
+                       .build();
+
+        generateNewGlobalAcl();
+        updateJobAcls();
+        updateAgentAcls();
     }
 
     /**
@@ -477,9 +511,9 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     public void deleteAgentRole(String roleName) throws IOException {
         AgentRole role = agentRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findAny().orElseThrow(() ->
-                        new NoSuchElementException("No AgentRole with the name " + roleName + " exists."));
+                             .filter(r -> r.getName().equals(roleName))
+                             .findAny().orElseThrow(() ->
+                                  new NoSuchElementException("No AgentRole with the name " + roleName + " exists."));
 
         agentRoles.remove(role);
 
@@ -487,21 +521,14 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             Jenkins.get().save();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to save the config when deleting agent role. " +
-                    "The role was not deleted.", e);
+                                         "The role was not deleted.", e);
             agentRoles.add(role);
             throw e;
         } finally {
             // TODO update jobACLs manually?
-            updateJobAcls(true);
+            updateJobAcls();
             jobAclCache.invalidateAll();
         }
-    }
-
-    private void initCache() {
-        jobAclCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .maximumSize(2048)
-                .build();
     }
 
     @Extension
