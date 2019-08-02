@@ -13,6 +13,7 @@
     <version>${revision}${changelist}</version>
     <name>Folder-based Authorization Strategy</name>
     <description>Manage access to Folders</description>
+    <url>https://github.com/jenkinsci/folder-auth-plugin</url>
 
     <developers>
         <developer>

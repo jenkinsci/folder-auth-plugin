@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<div>
+    <p>
+        Easily configure permissions user permissions for
+        <a href="https://wiki.jenkins.io/display/JENKINS/CloudBees+Folders+Plugin">Folders</a>
+        and the items within them. The permissions for each folder apply to all of its children.
+        This plugin also allows giving users permissions that are applicable everywhere in Jenkins.
+        Permissions for agents are also supported. For more details, checkout the
+        <a href="https://github.com/jenkinsci/folder-auth-plugin">
+            GitHub page
+        </a>.
+    </p>
+</div>
