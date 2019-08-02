@@ -150,4 +150,23 @@ public class FolderAuthorizationStrategyAPITest {
         FolderAuthorizationStrategyAPI.addAgentRole(new AgentRole("baz", wrapPermissions(Computer.CONFIGURE),
             singleton("agent43")));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBlankSidInGlobalRoles() {
+        FolderAuthorizationStrategyAPI.assignSidToGlobalRole("", "admin");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBlankSidInFolderRoles() {
+        FolderAuthorizationStrategyAPI.addFolderRole(new FolderRole("qwerty", wrapPermissions(Item.EXTENDED_READ),
+            singleton("sampleFolder")));
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole(" \t", "qwerty");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBlankSidInAgentRoles() {
+        FolderAuthorizationStrategyAPI.addFolderRole(new FolderRole("foo", wrapPermissions(Item.EXTENDED_READ),
+            singleton("sampleAgent")));
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole("\t\t \t", "foo");
+    }
 }

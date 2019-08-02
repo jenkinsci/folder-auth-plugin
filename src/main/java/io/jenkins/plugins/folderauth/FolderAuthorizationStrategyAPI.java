@@ -5,6 +5,7 @@ import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashSet;
@@ -115,8 +116,13 @@ public class FolderAuthorizationStrategyAPI {
      * @param sid      this sid will be assigned to the global role with the name equal to {@code roleName}.
      * @param roleName the name of the global role
      * @throws IllegalArgumentException when no global role with name equal to {@code roleName} exists
+     * @throws IllegalArgumentException when the {@code sid} is empty
      */
     public static void assignSidToGlobalRole(String sid, String roleName) {
+        if (StringUtils.isBlank(sid)) {
+            throw new IllegalArgumentException("Sid should not be blank.");
+        }
+
         run(strategy -> {
             Set<GlobalRole> globalRoles = new HashSet<>(strategy.getGlobalRoles());
             GlobalRole role = globalRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
@@ -135,8 +141,13 @@ public class FolderAuthorizationStrategyAPI {
      * @param sid      this sid will be assigned to the {@link AgentRole} with the name equal to {@code roleName}.
      * @param roleName the name of the agent role
      * @throws IllegalArgumentException when no agent role with name equal to {@code roleName} exists
+     * @throws IllegalArgumentException when the {@code sid} is empty
      */
     public static void assignSidToAgentRole(String sid, String roleName) {
+        if (StringUtils.isBlank(sid)) {
+            throw new IllegalArgumentException("Sid should not be blank.");
+        }
+
         run(strategy -> {
             Set<AgentRole> agentRoles = new HashSet<>(strategy.getAgentRoles());
             AgentRole role = agentRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
@@ -155,8 +166,13 @@ public class FolderAuthorizationStrategyAPI {
      * @param sid      this sid will be assigned to the {@link FolderRole} with the name equal to {@code roleName}.
      * @param roleName the name of the folder role
      * @throws IllegalArgumentException when no folder role with name equal to {@code roleName} exists
+     * @throws IllegalArgumentException when the {@code sid} is empty
      */
     public static void assignSidToFolderRole(String sid, String roleName) {
+        if (StringUtils.isBlank(sid)) {
+            throw new IllegalArgumentException("Sid should not be blank.");
+        }
+
         run(strategy -> {
             Set<FolderRole> folderRoles = new HashSet<>(strategy.getFolderRoles());
             FolderRole role = folderRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
