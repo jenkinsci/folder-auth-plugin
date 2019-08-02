@@ -8,6 +8,7 @@ import jenkins.model.Jenkins;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -55,10 +56,16 @@ public class FolderAuthorizationStrategyAPI {
      * Adds a {@link GlobalRole} to the {@link FolderBasedAuthorizationStrategy}.
      *
      * @param role the role to be added.
+     * @throws IllegalArgumentException when a role with the given name already exists.
      */
     public static void addGlobalRole(GlobalRole role) {
         run(strategy -> {
             Set<GlobalRole> globalRoles = new HashSet<>(strategy.getGlobalRoles());
+            String name = role.getName();
+            Optional<GlobalRole> existing = globalRoles.stream().filter(r -> r.getName().equals(name)).findAny();
+            if (existing.isPresent()) {
+                throw new IllegalArgumentException("A global role with the name \"" + name + "\" already exists.");
+            }
             globalRoles.add(role);
             return new FolderBasedAuthorizationStrategy(globalRoles, strategy.getFolderRoles(), strategy.getAgentRoles());
         });
@@ -68,10 +75,16 @@ public class FolderAuthorizationStrategyAPI {
      * Adds a {@link FolderRole} to the {@link FolderBasedAuthorizationStrategy}.
      *
      * @param role the role to be added.
+     * @throws IllegalArgumentException when a role with the given name already exists.
      */
     public static void addFolderRole(FolderRole role) {
         run(strategy -> {
             Set<FolderRole> folderRoles = new HashSet<>(strategy.getFolderRoles());
+            String name = role.getName();
+            Optional<FolderRole> existing = folderRoles.stream().filter(r -> r.getName().equals(name)).findAny();
+            if (existing.isPresent()) {
+                throw new IllegalArgumentException("A folder role with the name \"" + name + "\" already exists.");
+            }
             folderRoles.add(role);
             return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), folderRoles, strategy.getAgentRoles());
         });
@@ -81,10 +94,16 @@ public class FolderAuthorizationStrategyAPI {
      * Adds an {@link AgentRole} to the {@link FolderBasedAuthorizationStrategy}.
      *
      * @param role the role to be added.
+     * @throws IllegalArgumentException when a role with the given name already exists.
      */
     public static void addAgentRole(AgentRole role) {
         run(strategy -> {
             Set<AgentRole> agentRoles = new HashSet<>(strategy.getAgentRoles());
+            String name = role.getName();
+            Optional<AgentRole> existing = agentRoles.stream().filter(r -> r.getName().equals(name)).findAny();
+            if (existing.isPresent()) {
+                throw new IllegalArgumentException("An agent role with the name \"" + name + "\" already exists.");
+            }
             agentRoles.add(role);
             return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
         });
