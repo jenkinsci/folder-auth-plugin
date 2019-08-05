@@ -2,9 +2,6 @@
 <div>
     <p>
         Allows configuring users' permissions to projects organized in
-        folders from the Cloudbees Folder plugin. See the
-        <a href="https://github.com/jenkinsci/folder-auth-plugin">
-            GitHub page
-        </a> for more details.
+        folders from the Cloudbees Folder plugin.
     </p>
 </div>
