@@ -1,5 +1,5 @@
 div.form-row {
-    padding-top: 10px;
+    padding-top: 5px;
     padding-bottom: 10px;
     padding-right: 10px;
 }
@@ -62,19 +62,35 @@ div.role {
     background-color: firebrick;
 }
 
-button.submit-button {
+input[type="text"] {
+    margin-left: 3px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: thin;
+    padding: 3px 3px;
+}
+
+button.submit-button, input.submit {
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
     padding: 5px 5px;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 10px;
-    background-color: #dddddd;
-    display: block;
+    line-height: 1.25;
+    border-style: solid;
+    border-color: #007bff;
+    background-color: #007bff;
+    color: #ffffff;
+    display: inline-block;
 }
 
-button.submit-button:hover {
-    background-color: #f1f1f1;
+button.submit-button:hover, input.submit:hover {
+    background-color: #0069d9;
+}
+
+button.submit-button:active, input.submit:hover {
+    background-color: #0062cc;
 }
 
 input.filter {

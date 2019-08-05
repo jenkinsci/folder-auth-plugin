@@ -185,7 +185,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).addFolderRole(request.getAgentRole());
+            ((FolderBasedAuthorizationStrategy) strategy).addAgentRole(request.getAgentRole());
         }
     }
 

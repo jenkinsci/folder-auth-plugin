@@ -7,6 +7,13 @@
             <script src="${rootURL}/plugin/folder-auth/js/folders.js"/>
             <link rel="stylesheet" href="${rootURL}/plugin/folder-auth/css/folder-strategy.css" type="text/css"/>
             <div>
+                <p>
+                    ${%helpNeeded}
+                    <j:whitespace/>
+                    <a href="https://github.com/jenkinsci/folder-auth-plugin/blob/master/docs/usage.md" target="_blank">
+                        ${%docs}
+                    </a>
+                </p>
                 <h1>${%manageGlobalRoles}</h1>
                 <h2>
                     ${%currentGlobalRoles}
@@ -26,7 +33,8 @@
                                         </label>
                                         <input id="assign-sid-global-${index}" type="text" name="sid"/>
                                         <input type="hidden" value="${globalRole.name}" name="roleName"/>
-                                        <input type="submit" style="margin-left: 10px;"/>
+                                        <input type="submit" style="margin-left: 10px;" value="${%submit}"
+                                               class="submit"/>
                                     </div>
                                 </form>
                                 <br/>
@@ -59,18 +67,16 @@
                             <input id="globalRoleName" name="roleName" type="text" minlength="3"/>
                         </label>
                     </div>
-                    <div class="form-label">
+                    <label class="form-label" for="global-permission-select">
                         ${%permissions}
-                    </div>
-                    <label class="form-label">
-                        <select multiple="multiple" name="permissions" id="global-permission-select">
-                            <j:forEach items="${it.getGlobalPermissions()}" var="perm">
-                                <option value="${perm.id}" tooltip="${perm.description}">
-                                    ${perm.group.title} | ${perm.name}
-                                </option>
-                            </j:forEach>
-                        </select>
                     </label>
+                    <select multiple="multiple" name="permissions" id="global-permission-select">
+                        <j:forEach items="${it.getGlobalPermissions()}" var="perm">
+                            <option value="${perm.id}" tooltip="${perm.description}">
+                                ${perm.group.title} | ${perm.name}
+                            </option>
+                        </j:forEach>
+                    </select>
                     <button type="button" onclick="addGlobalRole();" class="submit-button">
                         ${%addRole}
                     </button>
@@ -111,7 +117,8 @@
                                             </label>
                                             <input id="assign-sid-folder-${index}" type="text" name="sid"/>
                                             <input type="hidden" value="${folderRole.name}" name="roleName"/>
-                                            <input type="submit" style="margin-left: 10px;"/>
+                                            <input type="submit" style="margin-left: 10px;" value="${%submit}"
+                                                   class="submit"/>
                                         </div>
                                     </form>
                                     <button class="collapsible">${%viewPermissions}</button>
@@ -150,26 +157,26 @@
                             // asynchronously render folder names
                             getFolders();
                         </script>
-                        <label class="form-label">
+                        <label class="form-label" for="folder-select">
                             ${%applyOn}:
-                            <div id="loading-folders" class="loading">
-                                ${%loadingFolders}
-                            </div>
-                            <select name="folderNames" multiple="multiple" id="folder-select" class="form-control"
-                                    style="display: none;">
-                            </select>
                         </label>
-                    </div>
-                    <label class="form-label">
-                        ${%permissions}
-                        <select multiple="multiple" name="permissions" id="folder-permission-select">
-                            <j:forEach items="${it.getFolderPermissions()}" var="perm">
-                                <option value="${perm.id}" tooltip="${perm.description}">
-                                    ${perm.group.title} | ${perm.name}
-                                </option>
-                            </j:forEach>
+                        <div id="loading-folders" class="loading">
+                            ${%loadingFolders}
+                        </div>
+                        <select name="folderNames" multiple="multiple" id="folder-select" class="form-control"
+                                style="display: none;">
                         </select>
+                    </div>
+                    <label class="form-label" for="folder-permission-select">
+                        ${%permissions}
                     </label>
+                    <select multiple="multiple" name="permissions" id="folder-permission-select">
+                        <j:forEach items="${it.getFolderPermissions()}" var="perm">
+                            <option value="${perm.id}" tooltip="${perm.description}">
+                                ${perm.group.title} | ${perm.name}
+                            </option>
+                        </j:forEach>
+                    </select>
                     <div class="form-row">
                         <button id="add-folder-role-button" type="button" class="submit-button"
                                 onclick="addFolderRole();" disabled="disabled">
@@ -213,7 +220,8 @@
                                             </label>
                                             <input id="assign-sid-agent-${index}" type="text" name="sid"/>
                                             <input type="hidden" value="${agentRole.name}" name="roleName"/>
-                                            <input type="submit" style="margin-left: 10px;"/>
+                                            <input type="submit" style="margin-left: 10px;" value="${%submit}"
+                                                   class="submit"/>
                                         </div>
                                     </form>
                                     <button class="collapsible">${%viewPermissions}</button>
@@ -248,25 +256,25 @@
                         </label>
                     </div>
                     <div class="form-row">
-                        <label class="form-label">
+                        <label class="form-label" for="agent-select">
                             ${%applyOn}:
-                            <select name="agentNames" multiple="multiple" id="agent-select" class="form-control">
-                                <j:forEach items="${it.allComputers}" var="agent">
-                                    <option value="${agent.name}">${agent.displayName}</option>
-                                </j:forEach>
-                            </select>
                         </label>
-                    </div>
-                    <label class="form-label">
-                        ${%permissions}
-                        <select multiple="multiple" name="permissions" id="agent-permission-select">
-                            <j:forEach items="${it.getAgentPermissions()}" var="perm">
-                                <option value="${perm.id}" tooltip="${perm.description}">
-                                    ${perm.group.title} | ${perm.name}
-                                </option>
+                        <select name="agentNames" multiple="multiple" id="agent-select" class="form-control">
+                            <j:forEach items="${it.allComputers}" var="agent">
+                                <option value="${agent.name}">${agent.displayName}</option>
                             </j:forEach>
                         </select>
+                    </div>
+                    <label class="form-label" for="agent-permission-select">
+                        ${%permissions}
                     </label>
+                    <select multiple="multiple" name="permissions" id="agent-permission-select">
+                        <j:forEach items="${it.getAgentPermissions()}" var="perm">
+                            <option value="${perm.id}" tooltip="${perm.description}">
+                                ${perm.group.title} | ${perm.name}
+                            </option>
+                        </j:forEach>
+                    </select>
                     <div class="form-row">
                         <button type="button" class="submit-button" onclick="addAgentRole();">${%addRole}</button>
                     </div>

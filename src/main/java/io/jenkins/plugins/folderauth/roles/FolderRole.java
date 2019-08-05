@@ -3,9 +3,10 @@ package io.jenkins.plugins.folderauth.roles;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,8 +16,6 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     private final Set<String> folders;
 
     @DataBoundConstructor
-    @ParametersAreNonnullByDefault
-    @SuppressWarnings("WeakerAccess")
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders, Set<String> sids) {
         super(name, permissions);
         this.sids.addAll(sids);
@@ -28,13 +27,42 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
         this(name, permissions, folders, Collections.emptySet());
     }
 
+    private FolderRole(String name, Set<PermissionWrapper> permissions, HashSet<String> folders, HashSet<String> sids) {
+        super(name, permissions, sids);
+        this.folders = folders;
+    }
+
+    /**
+     * Used by XStream when serializing this object.
+     * <p>
+     * Simplifies the configuration produced by the object.
+     *
+     * @return a new {@link FolderRole} which does not use thread-safe constructs
+     */
+    @SuppressWarnings("unused")
+    private FolderRole writeReplace() {
+        return new FolderRole(name, permissionWrappers, new HashSet<>(folders), new HashSet<>(sids));
+    }
+
+    /**
+     * Used by XSteam when deserializing.
+     * <p>
+     * Replaces the collections into thread-safe collections.
+     *
+     * @return a new {@link FolderRole} that uses thread safe collections.
+     */
+    @SuppressWarnings("unused")
+    private FolderRole readResolve() {
+        return new FolderRole(name, permissionWrappers, folders, sids);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(name, sids, permissionWrappers);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@CheckForNull Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FolderRole that = (FolderRole) o;
@@ -63,6 +91,7 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
      *
      * @return the folder names as a comma separated string list
      */
+    @Nonnull
     @SuppressWarnings("unused") // used in index.jelly
     public String getFolderNamesCommaSeparated() {
         String csv = folders.toString();

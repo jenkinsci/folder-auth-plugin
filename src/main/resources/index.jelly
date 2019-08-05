@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<div>
+    <p>
+        Allows configuring users' permissions to projects organized in
+        folders from the Cloudbees Folder plugin.
+    </p>
+</div>
