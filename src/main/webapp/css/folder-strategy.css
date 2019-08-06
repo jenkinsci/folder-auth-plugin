@@ -93,6 +93,18 @@ button.submit-button:active, input.submit:hover {
     background-color: #0062cc;
 }
 
+input.filter {
+    margin-bottom: 10px;
+    padding: 5px 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: thin;
+    width: 100%;
+    max-width: 250px;
+}
+
 select[multiple] {
     border-color: #000;
     -webkit-border-radius: 10px;
