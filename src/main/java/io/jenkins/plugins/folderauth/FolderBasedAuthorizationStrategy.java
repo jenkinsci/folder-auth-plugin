@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * An {@link AuthorizationStrategy} that controls access to {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}s
  * through {@link FolderRole}s, to {@link Computer}s through {@link AgentRole}s. Also provides global permissions
  * through {@link GlobalRole}s.
- * <p></p>
+ * <p>
  * All objects of this class are immutable. To modify the data for this strategy,
  * please use the {@link FolderAuthorizationStrategyAPI}.
  *
