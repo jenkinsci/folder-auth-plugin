@@ -57,6 +57,15 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
                 "lock.png" : null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
+    @Override
+    public String getDescription() {
+        return Messages.FolderBasedAuthorizationStrategy_Description();
+    }
+
     @CheckForNull
     @Override
     public String getUrlName() {
