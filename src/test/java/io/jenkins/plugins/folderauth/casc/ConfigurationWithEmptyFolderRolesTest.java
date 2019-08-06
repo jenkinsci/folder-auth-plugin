@@ -21,6 +21,7 @@ public class ConfigurationWithEmptyFolderRolesTest {
         assertTrue(authorizationStrategy instanceof FolderBasedAuthorizationStrategy);
         FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) authorizationStrategy;
         assertEquals(0, strategy.getFolderRoles().size());
+        assertEquals(0, strategy.getAgentRoles().size());
         assertEquals(2, strategy.getGlobalRoles().size());
     }
 }

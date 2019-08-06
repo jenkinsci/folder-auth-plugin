@@ -54,7 +54,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Override
     public String getIconFileName() {
         return Jenkins.get().getAuthorizationStrategy() instanceof FolderBasedAuthorizationStrategy ?
-                "lock.png" : null;
+                   "lock.png" : null;
     }
 
     /**
@@ -116,21 +116,14 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      * Adds a {@link GlobalRole} to {@link FolderBasedAuthorizationStrategy}.
      *
      * @param request the request to create the {@link GlobalRole}
-     * @throws IOException           when unable to add Global role
      * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
      *                               not {@link FolderBasedAuthorizationStrategy}
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doAddGlobalRole(@JsonBody GlobalRoleCreationRequest request) throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).addGlobalRole(request.getGlobalRole());
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+    public void doAddGlobalRole(@JsonBody GlobalRoleCreationRequest request) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.addGlobalRole(request.getGlobalRole());
     }
 
     /**
@@ -140,62 +133,45 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      *
      * @param roleName the name of the global to which {@code sid} will be assigned to.
      * @param sid      the sid of the user/group to be assigned.
-     * @throws IOException                      when unable to assign the Sid to the role
-     * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
-     *                                          not {@link FolderBasedAuthorizationStrategy}
-     * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public void doAssignSidToGlobalRole(@QueryParameter(required = true) String roleName,
-                                        @QueryParameter(required = true) String sid) throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).assignSidToGlobalRole(roleName, sid);
-            redirect();
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+                                        @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.assignSidToGlobalRole(sid, roleName);
+        redirect();
     }
 
     /**
      * Adds a {@link FolderRole} to {@link FolderBasedAuthorizationStrategy}.
      *
      * @param request the request to create the role
-     * @throws IOException           when unable to add the role
      * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
      *                               not {@link FolderBasedAuthorizationStrategy}
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doAddFolderRole(@JsonBody FolderRoleCreationRequest request) throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).addFolderRole(request.getFolderRole());
-        }
+    public void doAddFolderRole(@JsonBody FolderRoleCreationRequest request) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.addFolderRole(request.getFolderRole());
     }
 
     /**
      * Adds an {@link AgentRole} to {@link FolderBasedAuthorizationStrategy}.
      *
      * @param request the request to create the role
-     * @throws IOException           when unable to add the role
      * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
      *                               not {@link FolderBasedAuthorizationStrategy}
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doAddAgentRole(@JsonBody AgentRoleCreationRequest request) throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).addAgentRole(request.getAgentRole());
-        }
+    public void doAddAgentRole(@JsonBody AgentRoleCreationRequest request) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.addAgentRole(request.getAgentRole());
     }
 
     /**
@@ -204,7 +180,6 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      *
      * @param roleName the name of the global to which {@code sid} will be assigned to.
      * @param sid      the sid of the user/group to be assigned.
-     * @throws IOException                      when unable to assign the Sid to the role
      * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
      *                                          not {@link FolderBasedAuthorizationStrategy}
      * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
@@ -212,16 +187,10 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public void doAssignSidToFolderRole(@QueryParameter(required = true) String roleName,
-                                        @QueryParameter(required = true) String sid) throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).assignSidToFolderRole(roleName, sid);
-            redirect();
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+                                        @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole(sid, roleName);
+        redirect();
     }
 
     /**
@@ -230,24 +199,17 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      *
      * @param roleName the name of the global to which {@code sid} will be assigned to.
      * @param sid      the sid of the user/group to be assigned.
-     * @throws IOException                      when unable to assign the Sid to the role
-     * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
-     *                                          not {@link FolderBasedAuthorizationStrategy}
-     * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public void doAssignSidToAgentRole(@QueryParameter(required = true) String roleName,
-                                        @QueryParameter(required = true) String sid) throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).assignSidToAgentRole(roleName, sid);
-            redirect();
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+                                       @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.assignSidToAgentRole(sid, roleName);
+        redirect();
     }
 
     /**
@@ -348,73 +310,49 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      * Deletes a global role.
      *
      * @param roleName the name of the role to be deleted
-     * @throws IOException                      when unable to delete the role
-     * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
-     *                                          not {@link FolderBasedAuthorizationStrategy}
-     * @throws IllegalArgumentException         when trying to delete the admin role
-     * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when trying to delete the admin role
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doDeleteGlobalRole(@QueryParameter(required = true) String roleName)
-            throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).deleteGlobalRole(roleName);
-            redirect();
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+    public void doDeleteGlobalRole(@QueryParameter(required = true) String roleName) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.deleteGlobalRole(roleName);
+        redirect();
     }
 
     /**
      * Deletes a folder role.
      *
      * @param roleName the name of the role to be deleted
-     * @throws IOException                      when unable to delete the role
-     * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
-     *                                          not {@link FolderBasedAuthorizationStrategy}
-     * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doDeleteFolderRole(@QueryParameter(required = true) String roleName)
-            throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).deleteFolderRole(roleName);
-            redirect();
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+    public void doDeleteFolderRole(@QueryParameter(required = true) String roleName) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.deleteFolderRole(roleName);
+        redirect();
     }
 
     /**
      * Deletes an {@link AgentRole} from the {@link FolderBasedAuthorizationStrategy}.
      *
      * @param roleName the name of the role to be deleted
-     * @throws IOException                      when unable to delete the role
      * @throws IllegalStateException            when {@link Jenkins#getAuthorizationStrategy()} is
      *                                          not {@link FolderBasedAuthorizationStrategy}
      * @throws java.util.NoSuchElementException when no role with name equal to {@code roleName} exists.
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doDeleteAgentRole(@QueryParameter(required = true) String roleName)
-            throws IOException {
-        Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
-        if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            ((FolderBasedAuthorizationStrategy) strategy).deleteAgentRole(roleName);
-            redirect();
-        } else {
-            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
-        }
+    public void doDeleteAgentRole(@QueryParameter(required = true) String roleName) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.deleteAgentRole(roleName);
+        redirect();
     }
 
     @Nonnull

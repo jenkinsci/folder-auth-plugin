@@ -52,23 +52,23 @@ public class FolderBasedAuthorizationStrategyTest {
         final String adminRoleName = "adminRole";
         final String overallReadRoleName = "overallRead";
 
-        strategy.addGlobalRole(new GlobalRole(adminRoleName,
+        FolderAuthorizationStrategyAPI.addGlobalRole(new GlobalRole(adminRoleName,
                 wrapPermissions(FolderAuthorizationStrategyManagementLink.getSafePermissions(
                         new HashSet<>(PermissionGroup.getAll())))));
 
-        strategy.assignSidToGlobalRole(adminRoleName, "admin");
+        FolderAuthorizationStrategyAPI.assignSidToGlobalRole("admin", adminRoleName);
 
-        strategy.addGlobalRole(new GlobalRole(overallReadRoleName, wrapPermissions(Permission.READ)));
-        strategy.assignSidToGlobalRole(overallReadRoleName, "authenticated");
+        FolderAuthorizationStrategyAPI.addGlobalRole(new GlobalRole(overallReadRoleName, wrapPermissions(Permission.READ)));
+        FolderAuthorizationStrategyAPI.assignSidToGlobalRole("authenticated", overallReadRoleName);
 
-        strategy.addFolderRole(new FolderRole("folderRole1", wrapPermissions(Item.READ),
+        FolderAuthorizationStrategyAPI.addFolderRole(new FolderRole("folderRole1", wrapPermissions(Item.READ),
                 ImmutableSet.of("root")));
-        strategy.assignSidToFolderRole("folderRole1", "user1");
-        strategy.assignSidToFolderRole("folderRole1", "user2");
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole("user1", "folderRole1");
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole("user2", "folderRole1");
 
-        strategy.addFolderRole(new FolderRole("folderRole2", wrapPermissions(Item.CONFIGURE, Item.DELETE),
+        FolderAuthorizationStrategyAPI.addFolderRole(new FolderRole("folderRole2", wrapPermissions(Item.CONFIGURE, Item.DELETE),
                 ImmutableSet.of("root/child1")));
-        strategy.assignSidToFolderRole("folderRole2", "user2");
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole("user2", "folderRole2");
 
         /*
          * Folder hierarchy for the test
@@ -90,9 +90,9 @@ public class FolderBasedAuthorizationStrategyTest {
         job1 = child2.createProject(FreeStyleProject.class, "job1");
         job2 = child3.createProject(FreeStyleProject.class, "job2");
 
-        admin = User.get("admin");
-        user1 = User.get("user1");
-        user2 = User.get("user2");
+        admin = User.getById("admin", true);
+        user1 = User.getById("user1", true);
+        user2 = User.getById("user2", true);
     }
 
     @Test

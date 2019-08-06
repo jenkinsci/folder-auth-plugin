@@ -5,16 +5,13 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A role as an object
+ * A role as an immutable object
  */
 @Restricted(NoExternalUse.class)
 public abstract class AbstractRole {
@@ -25,10 +22,10 @@ public abstract class AbstractRole {
     protected final String name;
 
     /**
-     * Wrappers of permissions that are assigned to this role.
+     * Wrappers of permissions that are assigned to this role. Should not be modified.
      */
     @Nonnull
-    protected final Set<PermissionWrapper> permissionWrappers;
+    private final Set<PermissionWrapper> permissionWrappers;
 
     /**
      * The sids on which this role is applicable.
@@ -36,48 +33,10 @@ public abstract class AbstractRole {
     @Nonnull
     protected final Set<String> sids;
 
-    public AbstractRole(String name, Set<PermissionWrapper> permissionWrappers) {
-        this.name = name;
-        this.sids = ConcurrentHashMap.newKeySet();
-        this.permissionWrappers = Collections.unmodifiableSet(permissionWrappers);
-    }
-
-    /**
-     * Constructor for an {@link AbstractRole} that does not use thread-safe constructs.
-     * <p>
-     * Use only when serializing the object. The set of Sids and the unmodifiable set of
-     * permissions is changed to a {@link HashSet} for simpler serialization
-     *
-     * @param name        the names of role
-     * @param permissions the permissions granted by this role
-     * @param sids        the sids to be assigned to this role
-     */
     AbstractRole(String name, Set<PermissionWrapper> permissions, Set<String> sids) {
         this.name = name;
-        this.sids = new HashSet<>(sids);
-
-        // Permissions are stored in an unmodifiable set. If an unmodifiable set was already
-        // provided, the set would be wrapped up again resulting in unnecessary nesting in
-        // the XML produced during serialization. This simplifies it.
         this.permissionWrappers = new HashSet<>(permissions);
-    }
-
-    /**
-     * This {@link AbstractRole} will become applicable on the given {@code sids}.
-     *
-     * @param sids the user sids on which this role will become applicable
-     */
-    public void assignSids(String... sids) {
-        assignSids(Arrays.asList(sids));
-    }
-
-    /**
-     * This {@link AbstractRole} will become applicable on the given {@code sids}.
-     *
-     * @param sids the sids on which this role will become applicable
-     */
-    public void assignSids(@Nonnull List<String> sids) {
-        this.sids.addAll(sids);
+        this.sids = new HashSet<>(sids);
     }
 
     @Override
@@ -86,8 +45,8 @@ public abstract class AbstractRole {
         if (o == null || getClass() != o.getClass()) return false;
         AbstractRole role = (AbstractRole) o;
         return name.equals(role.name) &&
-                permissionWrappers.equals(role.permissionWrappers) &&
-                sids.equals(role.sids);
+                   permissionWrappers.equals(role.permissionWrappers) &&
+                   sids.equals(role.sids);
     }
 
     @Override
@@ -124,7 +83,7 @@ public abstract class AbstractRole {
      */
     @Nonnull
     public Set<String> getSids() {
-        return sids;
+        return Collections.unmodifiableSet(sids);
     }
 
     /**
@@ -137,13 +96,5 @@ public abstract class AbstractRole {
     public String getSidsCommaSeparated() {
         String string = sids.toString();
         return string.substring(1, string.length() - 1);
-    }
-
-    public void unassignSids(String... sids) {
-        this.sids.removeAll(Arrays.asList(sids));
-    }
-
-    public void unassignSids(@Nonnull List<String> sids) {
-        this.sids.removeAll(sids);
     }
 }
