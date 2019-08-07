@@ -141,7 +141,7 @@ curl -X POST -d 'roleName=bar&sid=foo' \
     http://localhost:8080/folder-auth/assignSidToGlobalRole
 ----
 
-== Deleting a role
+== API methods for deleting a role
 
 === `deleteGlobalRole`
 
