@@ -185,5 +185,9 @@ administrator permissions. See the example below for viewing the home page:
 
 [source,bash]
 ----
-curl -X GET -u $USERNAME:$PASSWORD http://localhost:8080/
+curl -X GET -u $USERNAME:$TOKEN http://localhost:8080/
 ----
+
+The API token can be obtained by clicking on your logged in user on the top-right
+of your Jenkins Home page and then clicking the 'Configure' button in the side bar.
+For more information about authentication, please see https://wiki.jenkins.io/display/JENKINS/Remote+access+API
