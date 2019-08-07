@@ -10,6 +10,7 @@ supported 'Global Roles', 'Folder Roles' and 'Agent Roles'.
 ![Screenshot of the plugin](/docs/images/screenshot.png)
 
 To learn more about how to use this plugin, read the [docs](/docs/usage.md).
+We also provide REST APIs for modifying the roles, check them out [here](/docs/rest-api.adoc).
 
 ## Reach out to us
 

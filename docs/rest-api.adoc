@@ -1,17 +1,19 @@
-# REST API methods
+= REST API methods
+:toc:
 
 The plugin provides REST APIs for modifying the roles. All of these methods
 require the user invoking them to have the `Jenkins.ADMINISTER` permission.
 
-## API methods for adding a role
+== API methods for adding a role
 
-### `addGlobalRole`
+=== `addGlobalRole`
 
 Adds a global role with no sids assigned to it. Requires POST to `${JENKINS_URL}/folder-auth/addGlobalRole`.
 The request body should specify the role to be added as a JSON object. For
 example, to add a role with name `foo` and providing the `Item | Delete` and the `Item | Configure` permissions, the request body should look like this:
 
-```json
+[source,json]
+----
 {
     "name": "foo",
     "permissions": [
@@ -19,11 +21,12 @@ example, to add a role with name `foo` and providing the `Item | Delete` and the
         "hudson.model.Item.Configure"
     ]
 }
-```
+----
 
 For example, you can add the role using `curl` like this:
 
-```bash
+[source,bash]
+----
 curl -X POST -H "Content-Type: application/json" -d \
     '{
         "name": "foo",
@@ -32,9 +35,9 @@ curl -X POST -H "Content-Type: application/json" -d \
             "hudson.model.Item.Configure"
         ]
      }' localhost:8080/folder-auth/addGlobalRole
-```
+----
 
-### `addFolderRole`
+=== `addFolderRole`
 
 Adds a folder role with no sids assigned to it. Requires POST to `${JENKINS_URL}/folder-auth/addFolderRole`.
 The request body should specify the role to be added as a JSON object. For
@@ -42,7 +45,8 @@ example, to add a role with name `foo` and providing the`Item | Delete` and
 the `Item | Configure` permissions on folders `bar`and `foo/baz`, the
 request body should look like this:
 
-```json
+[source,json]
+----
 {
     "name": "foo",
     "permissions": [
@@ -54,9 +58,9 @@ request body should look like this:
         "bar"
     ]
 }
-```
+----
 
-### `addAgentRole`
+=== `addAgentRole`
 
 Adds an agent role with no sids assigned to it. Requires POST to `${JENKINS_URL}/folder-auth/addAgentRole`.
 The request body should specify the role to be added as a JSON object. For
@@ -64,7 +68,8 @@ example, to add a role with the equal to `foo` and providing the
 `Agent | Configure` permissions on agents `bar` and `baz`, the request body
 should look like this:
 
-```json
+[source,json]
+----
 {
     "name": "foo",
     "permissions": [
@@ -75,11 +80,11 @@ should look like this:
         "baz"
     ]
 }
-```
+----
 
-## API methods for assigning a sid to a role
+== API methods for assigning a sid to a role
 
-### `assignSidToGlobalRole`
+=== `assignSidToGlobalRole`
 
 Assigns a sid to the role identified by its name. Requires POST to
 `${JENKINS_URL}/folder-auth/assignSidToGlobalRole`. The following query
@@ -92,12 +97,13 @@ to this parameter.
 
 Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
 
-```bash
+[source,bash]
+----
 curl -X POST -d 'roleName=bar&sid=foo' \
     http://localhost:8080/folder-auth/assignSidToGlobalRole
-```
+----
 
-### `assignSidToFolderRole`
+=== `assignSidToFolderRole`
 
 Assigns a sid to the role identified by its name. Requires POST to
 `${JENKINS_URL}/folder-auth/assignSidToFolderRole`. The following query
@@ -110,34 +116,74 @@ to this parameter.
 
 Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
 
-```bash
+[source,bash]
+----
 curl -X POST -d 'roleName=bar&sid=foo' \
     http://localhost:8080/folder-auth/assignSidToFolderRole
-```
+----
 
-### `assignSidToAgentRole`
+=== `assignSidToAgentRole`
 
 Assigns a sid to the role identified by its name. Requires POST to
 `${JENKINS_URL}/folder-auth/assignSidToAgentRole`. The following query
 parameters are required:
 
-* `roleName`: The sid will be assigned to the global role with the name equal
+* `roleName`: The sid will be assigned to the agent role with the name equal
 to this parameter.
 * `sid`: The sid to be assigned to the role with the name equal to the value of
 `roleName`.
 
 Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
 
-```bash
+[source,bash]
+----
 curl -X POST -d 'roleName=bar&sid=foo' \
     http://localhost:8080/folder-auth/assignSidToGlobalRole
-```
+----
 
-## Logging in to Jenkins
+== Deleting a role
+
+=== `deleteGlobalRole`
+
+Deletes a global role identified by its name. Requires POST to
+`${JENKINS_URL}/folder-auth/deleteGlobalRole`. The query parameter
+`roleName` is required.
+
+Using `curl`, for example, a role with name "foo" can be deleted
+
+[source,bash]
+----
+curl -X POST -d 'roleName=foo' http://localhost:8080/folder-auth/deleteGlobalRole
+----
+
+=== `deleteFolderRole`
+
+Deletes a folder role identified by its name. Requires POST to
+`${JENKINS_URL}/folder-auth/deleteGlobalRole`. The parameter
+`roleName` is required.
+
+[source,bash]
+----
+curl -X POST -d 'roleName=foo' http://localhost:8080/folder-auth/deleteFolderRole
+----
+
+=== `deleteAgentRole`
+
+Deletes an agent role identified by its name. Requires POST to
+`${JENKINS_URL}/folder-auth/deleteGlobalRole`. The parameter
+`roleName` is required.
+
+[source,bash]
+----
+curl -X POST -d 'roleName=foo' http://localhost:8080/folder-auth/deleteAgentRole
+----
+
+== Logging in to Jenkins
 
 When using cURL to invoke the API, you need to login as a user with the
 administrator permissions. See the example below for viewing the home page:
 
-```bash
+[source,bash]
+----
 curl -X GET -u $USERNAME:$PASSWORD http://localhost:8080/
-```
+----
