@@ -21,6 +21,19 @@ example, to add a role with name `foo` and providing the `Item | Delete` and the
 }
 ```
 
+For example, you can add the role using `curl` like this:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d \
+    '{
+        "name": "foo",
+        "permissions": [
+            "hudson.model.Item.Delete",
+            "hudson.model.Item.Configure"
+        ]
+     }' localhost:8080/folder-auth/addGlobalRole
+```
+
 ### `addFolderRole`
 
 Adds a folder role with no sids assigned to it. Requires POST to `${JENKINS_URL}/folder-auth/addFolderRole`.
@@ -55,7 +68,7 @@ should look like this:
 {
     "name": "foo",
     "permissions": [
-        "hudson.model.Computer.Configure",
+        "hudson.model.Computer.Configure"
     ],
     "agentNames": [
         "bar",
@@ -82,4 +95,49 @@ Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
 ```bash
 curl -X POST -d 'roleName=bar&sid=foo' \
     http://localhost:8080/folder-auth/assignSidToGlobalRole
+```
+
+### `assignSidToFolderRole`
+
+Assigns a sid to the role identified by its name. Requires POST to
+`${JENKINS_URL}/folder-auth/assignSidToFolderRole`. The following query
+parameters are required:
+
+* `roleName`: The sid will be assigned to the folder role with the name equal
+to this parameter.
+* `sid`: The sid to be assigned to the role with the name equal to the value of
+`roleName`.
+
+Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
+
+```bash
+curl -X POST -d 'roleName=bar&sid=foo' \
+    http://localhost:8080/folder-auth/assignSidToFolderRole
+```
+
+### `assignSidToAgentRole`
+
+Assigns a sid to the role identified by its name. Requires POST to
+`${JENKINS_URL}/folder-auth/assignSidToAgentRole`. The following query
+parameters are required:
+
+* `roleName`: The sid will be assigned to the global role with the name equal
+to this parameter.
+* `sid`: The sid to be assigned to the role with the name equal to the value of
+`roleName`.
+
+Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
+
+```bash
+curl -X POST -d 'roleName=bar&sid=foo' \
+    http://localhost:8080/folder-auth/assignSidToGlobalRole
+```
+
+## Logging in to Jenkins
+
+When using cURL to invoke the API, you need to login as a user with the
+administrator permissions. See the example below for viewing the home page:
+
+```bash
+curl -X GET -u $USERNAME:$PASSWORD http://localhost:8080/
 ```
