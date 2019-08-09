@@ -3,6 +3,7 @@ package io.jenkins.plugins.folderauth;
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import hudson.Extension;
 import hudson.model.AbstractItem;
+import hudson.model.Api;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -28,6 +29,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
 import org.kohsuke.stapler.verb.GET;
@@ -46,6 +48,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Extension
+@ExportedBean
 @ParametersAreNonnullByDefault
 public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     private static final Logger LOGGER = Logger.getLogger(FolderAuthorizationStrategyManagementLink.class.getName());
@@ -110,6 +113,17 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         groups.remove(PermissionGroup.get(Hudson.class));
         groups.remove(PermissionGroup.get(Permission.class));
         return getSafePermissions(groups);
+    }
+
+    /**
+     * Returns the {@link Api} for the plugin.
+     *
+     * @return Api for the plugin.
+     * @see <a href="https://wiki.jenkins.io/display/JENKINS/Exposing+data+to+the+remote+API">
+     * Wiki Article on exposing data to remote API</a>.
+     */
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**

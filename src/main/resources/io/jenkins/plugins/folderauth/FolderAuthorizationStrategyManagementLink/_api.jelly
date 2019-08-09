@@ -1,0 +1,14 @@
+<div>
+    <h1>
+        REST APIs for the Folder Authorization Plugin
+    </h1>
+    <p>
+        The documentation for the REST API methods for the Folder Auth plugin can be found in the
+        <a href="https://github.com/jenkinsci/folder-auth-plugin/blob/master/docs/rest-api.adoc" target="_blank">
+            GitHub repository
+        </a>. Swagger API for plugin is available at
+        <a href="https://app.swaggerhub.com/apis/abhyudaya/folder-auth" target="_blank">
+            SwaggerHub
+        </a>.
+    </p>
+</div>
