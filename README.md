@@ -2,6 +2,7 @@
 
 [![Build Status](https://ci.jenkins.io/job/Plugins/job/folder-auth-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/folder-auth-plugin/job/master/)
 [![Gitter](https://badges.gitter.im/jenkinsci/role-strategy-plugin.svg)](https://gitter.im/jenkinsci/role-strategy-plugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=jenkinsci/folder-auth-plugin)](https://dependabot.com)
 
 This plugin provides an easy way to configure permisisons inside Jenkins
 through *roles* which can apply to multiple users. Three types of roles are
