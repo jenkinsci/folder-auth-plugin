@@ -93,6 +93,10 @@ const sendPostRequest = (postUrl, json) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', postUrl, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
+    // Jelly file sets up the crumb value for CSRF protection
+    if (crumb.value) {
+        xhr.setRequestHeader('Jenkins-Crumb', crumb.value);
+    }
 
     xhr.onload = () => {
         if (xhr.status === 200) {
