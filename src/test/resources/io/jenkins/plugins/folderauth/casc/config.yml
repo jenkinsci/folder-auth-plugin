@@ -39,7 +39,7 @@ jenkins:
             - id: "Agent/Delete"
             - id: "Job/Build"
             - id: "Job/ExtendedRead"
-            - id: "SCM/Tag"
+            - id: "hudson.scm.SCM.Tag"
             - id: "Job/Move"
             - id: "Job/Discover"
             - id: "Overall/Read"
