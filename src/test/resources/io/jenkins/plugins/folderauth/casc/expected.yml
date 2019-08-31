@@ -1,0 +1,53 @@
+agentRoles:
+- agents:
+  - "agent1"
+  name: "agentRole1"
+  permissions:
+  - id: "Agent/Configure"
+  - id: "Agent/Disconnect"
+  sids:
+  - "user1"
+folderRoles:
+- folders:
+  - "root"
+  name: "viewRoot"
+  permissions:
+  - id: "Job/Read"
+  sids:
+  - "user1"
+globalRoles:
+- name: "admin"
+  permissions:
+  - id: "View/Delete"
+  - id: "Agent/Connect"
+  - id: "Agent/Create"
+  - id: "View/Configure"
+  - id: "Job/Configure"
+  - id: "Agent/Build"
+  - id: "Job/Cancel"
+  - id: "Job/Read"
+  - id: "Agent/Delete"
+  - id: "Job/Build"
+  - id: "Job/ExtendedRead"
+  - id: "SCM/Tag"
+  - id: "Job/Move"
+  - id: "Job/Discover"
+  - id: "Overall/Read"
+  - id: "Job/Create"
+  - id: "Job/Workspace"
+  - id: "Agent/Provision"
+  - id: "Job/WipeOut"
+  - id: "View/Read"
+  - id: "View/Create"
+  - id: "Job/Delete"
+  - id: "Agent/ExtendedRead"
+  - id: "Agent/Configure"
+  - id: "Overall/Administer"
+  - id: "Agent/Disconnect"
+  sids:
+  - "admin"
+- name: "read"
+  permissions:
+  - id: "Overall/Read"
+  sids:
+  - "user1"

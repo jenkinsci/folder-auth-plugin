@@ -45,8 +45,12 @@ public final class PermissionWrapper {
     @DataBoundConstructor
     public PermissionWrapper(String id) {
         this.id = id;
-        permission = Permission.fromId(id);
+        permission = PermissionFinder.findPermission(id);
         checkPermission();
+    }
+
+    public String getId() {
+        return String.format("%s/%s", permission.group.getId(), permission.name);
     }
 
     /**
@@ -57,7 +61,7 @@ public final class PermissionWrapper {
     @Nonnull
     @SuppressWarnings("unused")
     private Object readResolve() {
-        permission = Permission.fromId(id);
+        permission = PermissionFinder.findPermission(id);
         checkPermission();
         return this;
     }
