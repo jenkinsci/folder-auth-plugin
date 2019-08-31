@@ -97,7 +97,7 @@ public final class PermissionWrapper {
      */
     private void checkPermission() {
         if (permission == null) {
-            throw new IllegalArgumentException(Messages.PermissionWrapper_UnknownPermission() + " " + id);
+            throw new IllegalArgumentException(Messages.PermissionWrapper_UnknownPermission(id));
         } else if (DANGEROUS_PERMISSIONS.contains(permission)) {
             throw new IllegalArgumentException(Messages.PermissionWrapper_NoDangerousPermissions());
         }
