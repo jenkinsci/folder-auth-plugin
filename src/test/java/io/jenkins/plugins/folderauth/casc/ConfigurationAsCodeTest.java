@@ -58,6 +58,22 @@ public class ConfigurationAsCodeTest {
     }
 
     @Test
+    @ConfiguredWithCode("config3.yml")
+    public void configurationImportWithHumanReadableTest() {
+        try (ACLContext ignored = ACL.as(User.getOrCreateByIdOrFullName("admin"))) {
+            assertTrue(j.jenkins.hasPermission(Jenkins.ADMINISTER));
+        }
+
+        try (ACLContext ignored = ACL.as(User.getOrCreateByIdOrFullName("user1"))) {
+            assertTrue(folder.hasPermission(Item.READ));
+            assertFalse(j.jenkins.hasPermission(Jenkins.ADMINISTER));
+
+            assertTrue(Objects.requireNonNull(j.jenkins.getComputer("agent1")).hasPermission(Computer.CONFIGURE));
+            assertFalse(Objects.requireNonNull(j.jenkins.getComputer("agent1")).hasPermission(Computer.DELETE));
+        }
+    }
+
+    @Test
     @ConfiguredWithCode("config.yml")
     public void configurationExportTest() throws Exception {
         ConfiguratorRegistry registry = ConfiguratorRegistry.get();
@@ -67,6 +83,20 @@ public class ConfigurationAsCodeTest {
 
         String exported = toYamlString(yourAttribute);
         String expected = toStringFromYamlFile(this, "expected.yml");
+
+        assertThat(exported, is(expected));
+    }
+
+    @Test
+    @ConfiguredWithCode("config3.yml")
+    public void configurationExportWithHumanReadableTest() throws Exception {
+        ConfiguratorRegistry registry = ConfiguratorRegistry.get();
+        ConfigurationContext context = new ConfigurationContext(registry);
+        CNode yourAttribute = getJenkinsRoot(context).get("authorizationStrategy").asMapping()
+            .get("folderBased");
+
+        String exported = toYamlString(yourAttribute);
+        String expected = toStringFromYamlFile(this, "expected3.yml");
 
         assertThat(exported, is(expected));
     }
