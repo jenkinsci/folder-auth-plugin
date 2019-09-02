@@ -43,7 +43,7 @@
                                     <ul>
                                         <j:forEach items="${globalRole.permissions}" var="wrapper">
                                             <li tooltip="${wrapper.permission.description}">
-                                                ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                                ${wrapper.permission.group.title}/${wrapper.permission.name}
                                             </li>
                                         </j:forEach>
                                     </ul>
@@ -73,7 +73,7 @@
                     <select multiple="multiple" name="permissions" id="global-permission-select">
                         <j:forEach items="${it.getGlobalPermissions()}" var="perm">
                             <option value="${perm.id}" tooltip="${perm.description}">
-                                ${perm.group.title} | ${perm.name}
+                                ${perm.group.title}/${perm.name}
                             </option>
                         </j:forEach>
                     </select>
@@ -126,7 +126,7 @@
                                         <ul>
                                             <j:forEach items="${folderRole.permissions}" var="wrapper">
                                                 <li tooltip="${wrapper.permission.description}">
-                                                    ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                                    ${wrapper.permission.group.title}/${wrapper.permission.name}
                                                 </li>
                                             </j:forEach>
                                         </ul>
@@ -173,7 +173,7 @@
                     <select multiple="multiple" name="permissions" id="folder-permission-select">
                         <j:forEach items="${it.getFolderPermissions()}" var="perm">
                             <option value="${perm.id}" tooltip="${perm.description}">
-                                ${perm.group.title} | ${perm.name}
+                                ${perm.group.title}/${perm.name}
                             </option>
                         </j:forEach>
                     </select>
@@ -229,7 +229,7 @@
                                         <ul>
                                             <j:forEach items="${agentRole.permissions}" var="wrapper">
                                                 <li tooltip="${wrapper.permission.description}">
-                                                    ${wrapper.permission.group.title} | ${wrapper.permission.name}
+                                                    ${wrapper.permission.group.title}/${wrapper.permission.name}
                                                 </li>
                                             </j:forEach>
                                         </ul>
@@ -271,7 +271,7 @@
                     <select multiple="multiple" name="permissions" id="agent-permission-select">
                         <j:forEach items="${it.getAgentPermissions()}" var="perm">
                             <option value="${perm.id}" tooltip="${perm.description}">
-                                ${perm.group.title} | ${perm.name}
+                                ${perm.group.title}/${perm.name}
                             </option>
                         </j:forEach>
                     </select>
