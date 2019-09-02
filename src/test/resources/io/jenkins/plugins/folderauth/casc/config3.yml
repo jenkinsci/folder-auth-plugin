@@ -1,0 +1,103 @@
+jenkins:
+  agentProtocols:
+    - "CLI2-connect"
+    - "JNLP2-connect"
+    - "JNLP3-connect"
+    - "JNLP4-connect"
+    - "Ping"
+  authorizationStrategy:
+    folderBased:
+      agentRoles:
+        - agents:
+            - "agent1"
+          name: "agentRole1"
+          permissions:
+            - id: "hudson.model.Computer.Configure"
+            - id: "hudson.model.Computer.Disconnect"
+          sids:
+            - "user1"
+      folderRoles:
+        - folders:
+            - "root"
+          name: "viewRoot"
+          permissions:
+            - id: "hudson.model.Item.Read"
+          sids:
+            - "user1"
+      globalRoles:
+        - name: "admin"
+          permissions:
+            - id: "View/Delete"
+            - id: "Agent/Connect"
+            - id: "Agent/Create"
+            - id: "View/Configure"
+            - id: "Job/Configure"
+            - id: "Agent/Build"
+            - id: "Overall/Administer"
+            - id: "Job/Cancel"
+            - id: "Job/Read"
+            - id: "Agent/Delete"
+            - id: "Job/Build"
+            - id: "Job/ExtendedRead"
+            - id: "hudson.scm.SCM.Tag"
+            - id: "Job/Move"
+            - id: "Job/Discover"
+            - id: "Overall/Read"
+            - id: "Job/Create"
+            - id: "Job/Workspace"
+            - id: "Agent/Provision"
+            - id: "Job/WipeOut"
+            - id: "View/Read"
+            - id: "View/Create"
+            - id: "Job/Delete"
+            - id: "Agent/ExtendedRead"
+            - id: "Agent/Configure"
+            - id: "Agent/Disconnect"
+          sids:
+            - "admin"
+        - name: "read"
+          permissions:
+            - id: "hudson.model.Hudson.Read"
+          sids:
+            - "user1"
+
+  disableRememberMe: false
+  markupFormatter: "plainText"
+  mode: NORMAL
+  myViewsTabBar: "standard"
+  numExecutors: 2
+  primaryView:
+    all:
+      name: "all"
+  projectNamingStrategy: "standard"
+  quietPeriod: 5
+  remotingSecurity:
+    enabled: false
+  scmCheckoutRetryCount: 0
+  slaveAgentPort: 0
+  updateCenter:
+    sites:
+      - id: "default"
+        url: "http://updates.jenkins-ci.org/update-center.json"
+
+  # System for test
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "1234"
+        - id: "user1"
+          password: ""
+
+  nodes:
+    - dumb:
+        mode: NORMAL
+        name: "agent1"
+        remoteFS: "/home/user1"
+        launcher: jnlp
+    - dumb:
+        mode: NORMAL
+        name: "agent2"
+        remoteFS: "/home/user1"
+        launcher: jnlp
