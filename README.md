@@ -2,6 +2,7 @@
 
 [![Build Status](https://ci.jenkins.io/job/Plugins/job/folder-auth-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/folder-auth-plugin/job/master/)
 [![Gitter](https://badges.gitter.im/jenkinsci/role-strategy-plugin.svg)](https://gitter.im/jenkinsci/role-strategy-plugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![GitHub release](https://img.shields.io/github/release/jenkinsci/folder-auth-plugin.svg?label=release)](https://github.com/jenkinsci/folder-auth-plugin/releases/latest)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=jenkinsci/folder-auth-plugin)](https://dependabot.com)
 
 This plugin provides an easy way to configure permisisons inside Jenkins
@@ -28,3 +29,7 @@ You can also reach out to us through Jenkins'
 Please create a ticket for any bug reports or feature requests on
 [Jenkins JIRA](https://issues.jenkins-ci.org/) and add `folder-auth-plugin`
 as the 'Component'.
+
+## Changelog
+
+See [GitHub Releases](https://github.com/jenkinsci/folder-auth-plugin/releases)
