@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A role as an immutable object
@@ -73,7 +74,7 @@ public abstract class AbstractRole {
      */
     @Nonnull
     public Set<PermissionWrapper> getPermissions() {
-        return Collections.unmodifiableSet(permissionWrappers);
+        return Collections.unmodifiableSortedSet(new TreeSet<>(permissionWrappers));
     }
 
     /**
@@ -87,14 +88,14 @@ public abstract class AbstractRole {
     }
 
     /**
-     * Return a comma separated list of sids assigned to this role
+     * Return a sorted comma separated list of sids assigned to this role
      *
-     * @return a comma separated list of sids assigned to this role
+     * @return a sorted comma separated list of sids assigned to this role
      */
     @Nonnull
     @SuppressWarnings("unused") // used by index.jelly
     public String getSidsCommaSeparated() {
-        String string = sids.toString();
+        String string = new TreeSet<>(sids).toString();
         return string.substring(1, string.length() - 1);
     }
 }

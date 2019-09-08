@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     @Nonnull
@@ -38,14 +39,14 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
     }
 
     /**
-     * Returns the folder names as a comma separated string list
+     * Returns sorted folder names as a comma separated string list
      *
-     * @return the folder names as a comma separated string list
+     * @return sorted folder names as a comma separated string list
      */
     @Nonnull
     @SuppressWarnings("unused") // used in index.jelly
     public String getFolderNamesCommaSeparated() {
-        String csv = folders.toString();
+        String csv = new TreeSet<>(folders).toString();
         return csv.substring(1, csv.length() - 1);
     }
 }

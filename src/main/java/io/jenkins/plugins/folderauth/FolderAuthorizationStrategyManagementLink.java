@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -371,7 +372,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     @Nonnull
     static Set<Permission> getSafePermissions(Set<PermissionGroup> groups) {
-        HashSet<Permission> safePermissions = new HashSet<>();
+        TreeSet<Permission> safePermissions = new TreeSet<>(Permission.ID_COMPARATOR);
         groups.stream().map(PermissionGroup::getPermissions).forEach(safePermissions::addAll);
         safePermissions.removeAll(PermissionWrapper.DANGEROUS_PERMISSIONS);
         return safePermissions;

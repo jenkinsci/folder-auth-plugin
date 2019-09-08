@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * when stored as a part of an {@link AbstractRole}.
  */
 @ParametersAreNonnullByDefault
-public final class PermissionWrapper {
+public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     // should've been final but needs to be setup when the
     // object is deserialized from the XML config
     private transient Permission permission;
@@ -131,5 +131,10 @@ public final class PermissionWrapper {
                 .map(Permission::getId)
                 .map(PermissionWrapper::new)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public int compareTo(PermissionWrapper other) {
+        return Permission.ID_COMPARATOR.compare(this.permission, other.permission);
     }
 }

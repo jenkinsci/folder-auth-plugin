@@ -8,6 +8,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @ParametersAreNonnullByDefault
 public class AgentRole extends AbstractRole {
@@ -29,14 +30,14 @@ public class AgentRole extends AbstractRole {
     }
 
     /**
-     * Returns the agent names as a comma separated string list
+     * Returns sorted agent names as a comma separated string list
      *
-     * @return the agent names as a comma separated string list
+     * @return sorted agent names as a comma separated string list
      */
     @Nonnull
     @SuppressWarnings("unused") // used in index.jelly
     public String getAgentNamesCommaSeparated() {
-        String csv = agents.toString();
+        String csv = new TreeSet<>(agents).toString();
         return csv.substring(1, csv.length() - 1);
     }
 }
