@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
@@ -71,10 +72,22 @@ public abstract class AbstractRole {
      * This method, however, does not return all permissions implied by this {@link AbstractRole}
      *
      * @return the permissions assigned to the role.
+     * @see AbstractRole#getPermissionsUnsorted() when the permissions are not needed in a sorted order.
      */
     @Nonnull
-    public Set<PermissionWrapper> getPermissions() {
+    public SortedSet<PermissionWrapper> getPermissions() {
         return Collections.unmodifiableSortedSet(new TreeSet<>(permissionWrappers));
+    }
+
+    /**
+     * The permissions assigned to the role in an unsorted order.
+     *
+     * @return permissions in an unsorted order.
+     * @see AbstractRole#getPermissions() when permissions are needed in a sorted order.
+     */
+    @Nonnull
+    public Set<PermissionWrapper> getPermissionsUnsorted() {
+        return Collections.unmodifiableSet(permissionWrappers);
     }
 
     /**

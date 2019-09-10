@@ -130,7 +130,7 @@ public class FolderAuthorizationStrategyAPI {
             HashSet<String> newSids = new HashSet<>(role.getSids());
             newSids.add(sid);
             globalRoles.remove(role);
-            globalRoles.add(new GlobalRole(role.getName(), role.getPermissions(), newSids));
+            globalRoles.add(new GlobalRole(role.getName(), role.getPermissionsUnsorted(), newSids));
             return new FolderBasedAuthorizationStrategy(globalRoles, strategy.getFolderRoles(), strategy.getAgentRoles());
         });
     }
@@ -155,7 +155,7 @@ public class FolderAuthorizationStrategyAPI {
             HashSet<String> newSids = new HashSet<>(role.getSids());
             newSids.add(sid);
             agentRoles.remove(role);
-            agentRoles.add(new AgentRole(role.getName(), role.getPermissions(), role.getAgents(), newSids));
+            agentRoles.add(new AgentRole(role.getName(), role.getPermissionsUnsorted(), role.getAgents(), newSids));
             return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
         });
     }
@@ -180,7 +180,7 @@ public class FolderAuthorizationStrategyAPI {
             HashSet<String> newSids = new HashSet<>(role.getSids());
             newSids.add(sid);
             folderRoles.remove(role);
-            folderRoles.add(new FolderRole(role.getName(), role.getPermissions(), role.getFolderNames(), newSids));
+            folderRoles.add(new FolderRole(role.getName(), role.getPermissionsUnsorted(), role.getFolderNames(), newSids));
             return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), folderRoles, strategy.getAgentRoles());
         });
     }
