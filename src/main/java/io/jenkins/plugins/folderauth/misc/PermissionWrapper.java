@@ -134,7 +134,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     }
 
     @Override
-    public int compareTo(PermissionWrapper other) {
+    public int compareTo(@Nonnull PermissionWrapper other) {
         return Permission.ID_COMPARATOR.compare(this.permission, other.permission);
     }
 }
