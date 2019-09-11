@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -241,10 +242,10 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
-    public Set<GlobalRole> getGlobalRoles() {
+    public SortedSet<GlobalRole> getGlobalRoles() {
         AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            return ((FolderBasedAuthorizationStrategy) strategy).getGlobalRoles();
+            return new TreeSet<>(((FolderBasedAuthorizationStrategy) strategy).getGlobalRoles());
         } else {
             throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
@@ -300,10 +301,10 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
-    public Set<FolderRole> getFolderRoles() {
+    public SortedSet<FolderRole> getFolderRoles() {
         AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            return ((FolderBasedAuthorizationStrategy) strategy).getFolderRoles();
+            return new TreeSet<>(((FolderBasedAuthorizationStrategy) strategy).getFolderRoles());
         } else {
             throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
@@ -312,10 +313,10 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
-    public Set<AgentRole> getAgentRoles() {
+    public SortedSet<AgentRole> getAgentRoles() {
         AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
         if (strategy instanceof FolderBasedAuthorizationStrategy) {
-            return ((FolderBasedAuthorizationStrategy) strategy).getAgentRoles();
+            return new TreeSet<>(((FolderBasedAuthorizationStrategy) strategy).getAgentRoles());
         } else {
             throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }

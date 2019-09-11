@@ -16,7 +16,12 @@ import java.util.TreeSet;
  * A role as an immutable object
  */
 @Restricted(NoExternalUse.class)
-public abstract class AbstractRole {
+public abstract class AbstractRole implements Comparable<AbstractRole> {
+    @Override
+    public int compareTo(@Nonnull AbstractRole other) {
+        return this.name.compareTo(other.name);
+    }
+
     /**
      * The unique name of the role.
      */

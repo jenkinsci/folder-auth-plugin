@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
+public class FolderRole extends AbstractRole {
     @Nonnull
     private final Set<String> folders;
 
@@ -21,11 +21,6 @@ public class FolderRole extends AbstractRole implements Comparable<FolderRole> {
 
     public FolderRole(String name, Set<PermissionWrapper> permissions, Set<String> folders) {
         this(name, permissions, folders, Collections.emptySet());
-    }
-
-    @Override
-    public int compareTo(FolderRole other) {
-        return name.compareTo(other.name);
     }
 
     /**
