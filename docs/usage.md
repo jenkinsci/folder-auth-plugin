@@ -110,8 +110,8 @@ jenkins:
             - "agent1"
           name: "agentRole1"
           permissions:
-            - id: "hudson.model.Computer.Configure"
-            - id: "hudson.model.Computer.Disconnect"
+            - id: "Agent/Configure"
+            - id: "Agent/Disconnect"
           sids:
             - "user1"
       folderRoles:
@@ -119,21 +119,24 @@ jenkins:
             - "root"
           name: "viewRoot"
           permissions:
-            - id: "hudson.model.Item.Read"
+            - id: "Job/Read"
           sids:
             - "user1"
       globalRoles:
         - name: "admin"
           permissions:
-            - id: "hudson.model.Hudson.Administer"
+            - id: "Overall/Administer"
           sids:
             - "admin"
         - name: "read"
           permissions:
-            - id: "hudson.model.Hudson.Read"
+            - id: "Overall/Read"
           sids:
             - "user1"
 ```
+
+The configuration YAML also supports permission IDs which are used internally by Jenkins,
+for example, `hudson.model.Hudson.Administer`
 
 **Note**: You need to have [Configuration-as-Code](https://plugins.jenkins.io/configuration-as-code)
 plugin ≥ [1.24](https://github.com/jenkinsci/configuration-as-code-plugin/releases/tag/configuration-as-code-1.24)
