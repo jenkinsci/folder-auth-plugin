@@ -236,4 +236,67 @@ public class FolderAuthorizationStrategyAPI {
             return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
         });
     }
+
+    /**
+     * Removes the {@code sid} from the {@link GlobalRole} with name equal to @{code roleName}.
+     *
+     * @param roleName the name of the role.
+     * @param sid      the sid that will be removed.
+     * @throws IllegalArgumentException when no {@link GlobalRole} with the given {@code roleName} exists.
+     */
+    public static void removeSidFromGlobalRole(String sid, String roleName) {
+        run(strategy -> {
+            Set<GlobalRole> globalRoles = new HashSet<>(strategy.getGlobalRoles());
+            GlobalRole role = globalRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No global role with name equal to \"" + roleName + "\" exists.")
+            );
+            Set<String> sids = new HashSet<>(role.getSids());
+            sids.remove(sid);
+            globalRoles.remove(role);
+            globalRoles.add(new GlobalRole(role.getName(), role.getPermissions(), sids));
+            return new FolderBasedAuthorizationStrategy(globalRoles, strategy.getFolderRoles(), strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Removes the {@code sid} from the {@link FolderRole} with name equal to @{code roleName}.
+     *
+     * @param roleName the name of the role.
+     * @param sid      the sid that will be removed.
+     * @throws IllegalArgumentException when no {@link FolderRole} with the given {@code roleName} exists.
+     */
+    public static void removeSidFromFolderRole(String sid, String roleName) {
+        run(strategy -> {
+            Set<FolderRole> folderRoles = new HashSet<>(strategy.getFolderRoles());
+            FolderRole role = folderRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No folder role with name equal to \"" + roleName + "\" exists.")
+            );
+            Set<String> sids = new HashSet<>(role.getSids());
+            sids.remove(sid);
+            folderRoles.remove(role);
+            folderRoles.add(new FolderRole(role.getName(), role.getPermissions(), role.getFolderNames(), sids));
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), folderRoles, strategy.getAgentRoles());
+        });
+    }
+
+    /**
+     * Removes the {@code sid} from the {@link AgentRole} with name equal to @{code roleName}.
+     *
+     * @param roleName the name of the role.
+     * @param sid      the sid that will be removed.
+     * @throws IllegalArgumentException when no {@link AgentRole} with the given {@code roleName} exists.
+     */
+    public static void removeSidFromAgentRole(String sid, String roleName) {
+        run(strategy -> {
+            Set<AgentRole> agentRoles = new HashSet<>(strategy.getAgentRoles());
+            AgentRole role = agentRoles.stream().filter(r -> r.getName().equals(roleName)).findAny().orElseThrow(
+                () -> new IllegalArgumentException("No agent role with name equal to \"" + roleName + "\" exists.")
+            );
+            Set<String> sids = new HashSet<>(role.getSids());
+            sids.remove(sid);
+            agentRoles.remove(role);
+            agentRoles.add(new AgentRole(role.getName(), role.getPermissions(), role.getAgents(), sids));
+            return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
+        });
+    }
 }

@@ -126,6 +126,58 @@ public class FolderAuthorizationStrategyAPITest {
         assertTrue(updatedRole.getSids().contains(sid));
     }
 
+    @Test
+    public void removeSidFromGlobalRole() {
+        AuthorizationStrategy a = j.jenkins.getAuthorizationStrategy();
+        assertTrue(a instanceof FolderBasedAuthorizationStrategy);
+        final String adminRoleName = "admin";
+        FolderAuthorizationStrategyAPI.assignSidToGlobalRole("user1", adminRoleName);
+        FolderAuthorizationStrategyAPI.removeSidFromGlobalRole("user1", adminRoleName);
+
+        // a new authorization strategy should have been set
+        AuthorizationStrategy b = j.jenkins.getAuthorizationStrategy();
+        assertTrue(b instanceof FolderBasedAuthorizationStrategy);
+        assertNotSame("A new instance of FolderBasedAuthorizationStrategy should have been set.", a, b);
+        FolderBasedAuthorizationStrategy newStrategy = (FolderBasedAuthorizationStrategy) b;
+        GlobalRole role = newStrategy.getGlobalRoles().stream().filter(r -> r.getName().equals(adminRoleName))
+                              .findAny().orElseThrow(() -> new RuntimeException("The admin role should exist"));
+        assertFalse(role.getSids().contains("admin2"));
+    }
+
+    @Test
+    public void removeSidFromFolderRole() {
+        String sid = "user1";
+        FolderRole role = new FolderRole("foo", wrapPermissions(Item.READ), singleton("folderFoo"));
+        assertEquals(0, role.getSids().size());
+        FolderAuthorizationStrategyAPI.addFolderRole(role);
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole(sid, "foo");
+        FolderAuthorizationStrategyAPI.removeSidFromFolderRole(sid, "foo");
+
+        AuthorizationStrategy a = j.jenkins.getAuthorizationStrategy();
+        assertTrue(a instanceof FolderBasedAuthorizationStrategy);
+        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
+        FolderRole updatedRole = strategy.getFolderRoles().stream().filter(r -> r.getName().equals("foo"))
+                                     .findAny().orElseThrow(() -> new RuntimeException("The created role should exist"));
+        assertFalse(updatedRole.getSids().contains(sid));
+    }
+
+    @Test
+    public void removeSidFromAgentRole() {
+        String sid = "user1";
+        AgentRole role = new AgentRole("bar", wrapPermissions(Item.READ), singleton("agentBar"));
+        assertEquals(0, role.getSids().size());
+        FolderAuthorizationStrategyAPI.addAgentRole(role);
+        FolderAuthorizationStrategyAPI.assignSidToAgentRole(sid, "bar");
+        FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, "bar");
+
+        AuthorizationStrategy a = j.jenkins.getAuthorizationStrategy();
+        assertTrue(a instanceof FolderBasedAuthorizationStrategy);
+        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
+        AgentRole updatedRole = strategy.getAgentRoles().stream().filter(r -> r.getName().equals("bar"))
+                                    .findAny().orElseThrow(() -> new RuntimeException("The created role should exist"));
+        assertFalse(updatedRole.getSids().contains(sid));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotAllowDuplicateNamesInGlobalRoles() {
         // the "admin" role should already exist
