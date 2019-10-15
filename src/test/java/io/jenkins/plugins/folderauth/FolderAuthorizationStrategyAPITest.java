@@ -141,7 +141,7 @@ public class FolderAuthorizationStrategyAPITest {
         FolderBasedAuthorizationStrategy newStrategy = (FolderBasedAuthorizationStrategy) b;
         GlobalRole role = newStrategy.getGlobalRoles().stream().filter(r -> r.getName().equals(adminRoleName))
                               .findAny().orElseThrow(() -> new RuntimeException("The admin role should exist"));
-        assertFalse(role.getSids().contains("admin2"));
+        assertFalse(role.getSids().contains("user1"));
     }
 
     @Test
