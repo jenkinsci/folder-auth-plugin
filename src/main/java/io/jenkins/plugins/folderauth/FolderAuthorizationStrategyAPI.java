@@ -243,6 +243,7 @@ public class FolderAuthorizationStrategyAPI {
      * @param roleName the name of the role.
      * @param sid      the sid that will be removed.
      * @throws IllegalArgumentException when no {@link GlobalRole} with the given {@code roleName} exists.
+     * @since TODO
      */
     public static void removeSidFromGlobalRole(String sid, String roleName) {
         run(strategy -> {
@@ -264,6 +265,7 @@ public class FolderAuthorizationStrategyAPI {
      * @param roleName the name of the role.
      * @param sid      the sid that will be removed.
      * @throws IllegalArgumentException when no {@link FolderRole} with the given {@code roleName} exists.
+     * @since TODO
      */
     public static void removeSidFromFolderRole(String sid, String roleName) {
         run(strategy -> {
@@ -285,6 +287,7 @@ public class FolderAuthorizationStrategyAPI {
      * @param roleName the name of the role.
      * @param sid      the sid that will be removed.
      * @throws IllegalArgumentException when no {@link AgentRole} with the given {@code roleName} exists.
+     * @since TODO
      */
     public static void removeSidFromAgentRole(String sid, String roleName) {
         run(strategy -> {
