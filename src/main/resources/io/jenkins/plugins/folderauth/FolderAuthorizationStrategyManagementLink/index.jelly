@@ -22,19 +22,30 @@
                     <input type="text" placeholder="${%filterPlaceholder}" class="filter" id="globalRoleFilter"/>
                     <div class="role-container" id="globalRoleContainer">
                         <j:forEach items="${it.globalRoles}" var="globalRole" indexVar="index">
-                            <div class="role" roleName="${globalRole.name}">
+                            <div class="role" roleName="${globalRole.name}" id="global-role-${globalRole.name}">
                                 ${%name}: ${globalRole.name}
                                 <br/>
                                 ${%sids}: ${globalRole.getSidsCommaSeparated()}
                                 <form action="${rootURL}/${it.urlName}/assignSidToGlobalRole" method="POST">
                                     <div class="form-row">
-                                        <label for="assign-sid-global-${index}" style="margin-right: 10px;">
+                                        <label for="assign-sid-global-${globalRole.name}" style="margin-right: 10px;">
                                             ${%assignSid}
                                         </label>
-                                        <input id="assign-sid-global-${index}" type="text" name="sid"/>
+                                        <input id="assign-sid-global-input-${globalRole.name}" type="text" name="sid"/>
                                         <input type="hidden" value="${globalRole.name}" name="roleName"/>
-                                        <input type="submit" style="margin-left: 10px;" value="${%submit}"
+                                        <input id="assign-sid-global-submit-${globalRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
                                                class="submit"/>
+                                    </div>
+                                </form>
+                                <form action="${rootUrl}/${it.urlName}/removeSidFromGlobalRole" method="POST">
+                                    <div class="form-row">
+                                        <label for="remove-sid-global-${index}" style="margin-right: 10px;">
+                                            ${%removeSid}
+                                        </label>
+                                        <input id="remove-sid-global-input-${globalRole.name}" type="text" name="sid"/>
+                                        <input type="hidden" value="${globalRole.name}" name="roleName"/>
+                                        <input id="remove-sid-global-submit-${globalRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
+                                                class="submit"/>
                                     </div>
                                 </form>
                                 <br/>
@@ -77,9 +88,12 @@
                             </option>
                         </j:forEach>
                     </select>
-                    <button type="button" onclick="addGlobalRole();" class="submit-button">
-                        ${%addRole}
-                    </button>
+                    <div class="form-row">
+                        <button id="add-global-role-button" type="button" class="submit-button"
+                                onclick="addGlobalRole();">
+                            ${%addRole}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -112,13 +126,24 @@
                                     <br/>
                                     <form action="${rootURL}/${it.urlName}/assignSidToFolderRole" method="POST">
                                         <div class="form-row">
-                                            <label for="assign-sid-folder-${index}" style="margin-right: 10px;">
+                                            <label for="assign-sid-folder-${folderRole.name}" style="margin-right: 10px;">
                                                 ${%assignSid}
                                             </label>
-                                            <input id="assign-sid-folder-${index}" type="text" name="sid"/>
+                                            <input id="assign-sid-folder-${folderRole.name}" type="text" name="sid"/>
                                             <input type="hidden" value="${folderRole.name}" name="roleName"/>
-                                            <input type="submit" style="margin-left: 10px;" value="${%submit}"
+                                            <input id="assign-sid-folder-submit-${folderRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
                                                    class="submit"/>
+                                        </div>
+                                    </form>
+                                    <form action="${rootUrl}/${it.urlName}/removeSidFromFolderRole" method="POST">
+                                        <div class="form-row">
+                                            <label for="remove-sid-folder-${index}" style="margin-right: 10px;">
+                                                ${%removeSid}
+                                            </label>
+                                            <input id="remove-sid-folder-input-${folderRole.name}" type="text" name="sid"/>
+                                            <input type="hidden" value="${folderRole.name}" name="roleName"/>
+                                            <input id="remove-sid-folder-submit-${folderRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
+                                                    class="submit"/>
                                         </div>
                                     </form>
                                     <button class="collapsible">${%viewPermissions}</button>
@@ -179,7 +204,7 @@
                     </select>
                     <div class="form-row">
                         <button id="add-folder-role-button" type="button" class="submit-button"
-                                onclick="addFolderRole();" disabled="disabled">
+                                onclick="addFolderRole();">
                             ${%addRole}
                         </button>
                     </div>
@@ -218,10 +243,21 @@
                                             <label for="assign-sid-agent-${index}" style="margin-right: 10px;">
                                                 ${%assignSid}
                                             </label>
-                                            <input id="assign-sid-agent-${index}" type="text" name="sid"/>
+                                            <input id="assign-sid-agent-${agentRole.name}" type="text" name="sid"/>
                                             <input type="hidden" value="${agentRole.name}" name="roleName"/>
-                                            <input type="submit" style="margin-left: 10px;" value="${%submit}"
+                                            <input id="assign-sid-agent-submit-${agentRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
                                                    class="submit"/>
+                                        </div>
+                                    </form>
+                                    <form action="${rootUrl}/${it.urlName}/removeSidFromAgentRole" method="POST">
+                                        <div class="form-row">
+                                            <label for="remove-sid-agent-${index}" style="margin-right: 10px;">
+                                                ${%removeSid}
+                                            </label>
+                                            <input id="remove-sid-agent-input-${agentRole.name}" type="text" name="sid"/>
+                                            <input type="hidden" value="${agentRole.name}" name="roleName"/>
+                                            <input id="remove-sid-agent-submit-${agentRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
+                                                    class="submit"/>
                                         </div>
                                     </form>
                                     <button class="collapsible">${%viewPermissions}</button>
@@ -276,7 +312,10 @@
                         </j:forEach>
                     </select>
                     <div class="form-row">
-                        <button type="button" class="submit-button" onclick="addAgentRole();">${%addRole}</button>
+                        <button id="add-agent-role-button" type="button" class="submit-button"
+                                onclick="addAgentRole();">
+                            ${%addRole}
+                        </button>
                     </div>
                 </div>
             </div>
