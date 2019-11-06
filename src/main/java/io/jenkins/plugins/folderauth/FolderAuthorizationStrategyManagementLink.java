@@ -57,7 +57,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Override
     public String getIconFileName() {
         return Jenkins.get().getAuthorizationStrategy() instanceof FolderBasedAuthorizationStrategy ?
-            "lock.png" : null;
+                "lock.png" : null;
     }
 
     /**
