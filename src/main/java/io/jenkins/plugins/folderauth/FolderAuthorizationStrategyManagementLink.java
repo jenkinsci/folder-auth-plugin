@@ -57,7 +57,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Override
     public String getIconFileName() {
         return Jenkins.get().getAuthorizationStrategy() instanceof FolderBasedAuthorizationStrategy ?
-                   "lock.png" : null;
+            "lock.png" : null;
     }
 
     /**
@@ -161,6 +161,24 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     }
 
     /**
+     * Removes {@code sid} from the global role identified by {@code roleName}.
+     *
+     * @param roleName the name of the global to which {@code sid} will be assigned to.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doRemoveSidFromGlobalRole(@QueryParameter(required = true) String roleName,
+                                          @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.removeSidFromGlobalRole(sid, roleName);
+        redirect();
+    }
+
+    /**
      * Adds a {@link FolderRole} to {@link FolderBasedAuthorizationStrategy}.
      *
      * @param request the request to create the role
@@ -172,20 +190,6 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     public void doAddFolderRole(@JsonBody FolderRoleCreationRequest request) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FolderAuthorizationStrategyAPI.addFolderRole(request.getFolderRole());
-    }
-
-    /**
-     * Adds an {@link AgentRole} to {@link FolderBasedAuthorizationStrategy}.
-     *
-     * @param request the request to create the role
-     * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
-     *                               not {@link FolderBasedAuthorizationStrategy}
-     */
-    @RequirePOST
-    @Restricted(NoExternalUse.class)
-    public void doAddAgentRole(@JsonBody AgentRoleCreationRequest request) {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        FolderAuthorizationStrategyAPI.addAgentRole(request.getAgentRole());
     }
 
     /**
@@ -208,6 +212,38 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     }
 
     /**
+     * Removes {@code sid} from the folder role identified by {@code roleName}.
+     *
+     * @param roleName the name of the global to which {@code sid} will be assigned to.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doRemoveSidFromFolderRole(@QueryParameter(required = true) String roleName,
+                                          @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.removeSidFromFolderRole(sid, roleName);
+        redirect();
+    }
+
+    /**
+     * Adds an {@link AgentRole} to {@link FolderBasedAuthorizationStrategy}.
+     *
+     * @param request the request to create the role
+     * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
+     *                               not {@link FolderBasedAuthorizationStrategy}
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doAddAgentRole(@JsonBody AgentRoleCreationRequest request) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.addAgentRole(request.getAgentRole());
+    }
+
+    /**
      * Assigns {@code sid} to the {@link AgentRole} identified by {@code roleName}.
      * <p>
      *
@@ -223,6 +259,24 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
                                        @QueryParameter(required = true) String sid) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FolderAuthorizationStrategyAPI.assignSidToAgentRole(sid, roleName);
+        redirect();
+    }
+
+    /**
+     * Removes {@code sid} from the agent role identified by {@code roleName}.
+     *
+     * @param roleName the name of the global to which {@code sid} will be assigned to.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doRemoveSidFromAgentRole(@QueryParameter(required = true) String roleName,
+                                         @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, roleName);
         redirect();
     }
 
