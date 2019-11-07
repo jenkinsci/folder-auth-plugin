@@ -26,26 +26,18 @@
                                 ${%name}: ${globalRole.name}
                                 <br/>
                                 ${%sids}: ${globalRole.getSidsCommaSeparated()}
-                                <form action="${rootURL}/${it.urlName}/assignSidToGlobalRole" method="POST">
+                                <form action="${rootURL}/${it.urlName}/assignOrRemoveSidGlobalRole" method="POST">
                                     <div class="form-row">
                                         <label for="assign-sid-global-${globalRole.name}" style="margin-right: 10px;">
-                                            ${%assignSid}
+                                            SID
                                         </label>
                                         <input id="assign-sid-global-input-${globalRole.name}" type="text" name="sid"/>
                                         <input type="hidden" value="${globalRole.name}" name="roleName"/>
-                                        <input id="assign-sid-global-submit-${globalRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
-                                               class="submit"/>
-                                    </div>
-                                </form>
-                                <form action="${rootUrl}/${it.urlName}/removeSidFromGlobalRole" method="POST">
-                                    <div class="form-row">
-                                        <label for="remove-sid-global-${index}" style="margin-right: 10px;">
-                                            ${%removeSid}
-                                        </label>
-                                        <input id="remove-sid-global-input-${globalRole.name}" type="text" name="sid"/>
-                                        <input type="hidden" value="${globalRole.name}" name="roleName"/>
-                                        <input id="remove-sid-global-submit-${globalRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
-                                                class="submit"/>
+                                        <br/>
+                                        <input id="assign-sid-global-submit-${globalRole.name}" type="submit"
+                                               style="margin-left: 40px;" value="Assign" name="action" class="submit"/>
+                                        <input id="remove-sid-global-submit-${globalRole.name}" type="submit"
+                                               style="margin-left: 10px;" value="Remove" name="action" class="submit"/>
                                     </div>
                                 </form>
                                 <br/>
@@ -124,26 +116,18 @@
                                     <br/>
                                     ${%folders}: ${folderRole.getFolderNamesCommaSeparated()}
                                     <br/>
-                                    <form action="${rootURL}/${it.urlName}/assignSidToFolderRole" method="POST">
+                                    <form action="${rootURL}/${it.urlName}/assignOrRemoveSidFolderRole" method="POST">
                                         <div class="form-row">
                                             <label for="assign-sid-folder-${folderRole.name}" style="margin-right: 10px;">
-                                                ${%assignSid}
+                                                SID
                                             </label>
-                                            <input id="assign-sid-folder-${folderRole.name}" type="text" name="sid"/>
+                                            <input id="assign-sid-folder-input-${folderRole.name}" type="text" name="sid"/>
                                             <input type="hidden" value="${folderRole.name}" name="roleName"/>
-                                            <input id="assign-sid-folder-submit-${folderRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
-                                                   class="submit"/>
-                                        </div>
-                                    </form>
-                                    <form action="${rootUrl}/${it.urlName}/removeSidFromFolderRole" method="POST">
-                                        <div class="form-row">
-                                            <label for="remove-sid-folder-${index}" style="margin-right: 10px;">
-                                                ${%removeSid}
-                                            </label>
-                                            <input id="remove-sid-folder-input-${folderRole.name}" type="text" name="sid"/>
-                                            <input type="hidden" value="${folderRole.name}" name="roleName"/>
-                                            <input id="remove-sid-folder-submit-${folderRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
-                                                    class="submit"/>
+                                            <br/>
+                                            <input id="assign-sid-folder-submit-${folderRole.name}" type="submit"
+                                                   style="margin-left: 40px;" value="Assign" name="action" class="submit"/>
+                                            <input id="remove-sid-folder-submit-${folderRole.name}" type="submit"
+                                                   style="margin-left: 10px;" value="Remove" name="action" class="submit"/>
                                         </div>
                                     </form>
                                     <button class="collapsible">${%viewPermissions}</button>
@@ -238,26 +222,18 @@
                                     <br/>
                                     ${%agents}: ${agentRole.getAgentNamesCommaSeparated()}
                                     <br/>
-                                    <form action="${rootURL}/${it.urlName}/assignSidToAgentRole" method="POST">
+                                    <form action="${rootURL}/${it.urlName}/assignOrRemoveSidAgentRole" method="POST">
                                         <div class="form-row">
-                                            <label for="assign-sid-agent-${index}" style="margin-right: 10px;">
-                                                ${%assignSid}
+                                            <label for="assign-sid-agent-${agentRole.name}" style="margin-right: 10px;">
+                                                SID
                                             </label>
-                                            <input id="assign-sid-agent-${agentRole.name}" type="text" name="sid"/>
+                                            <input id="assign-sid-agent-input-${agentRole.name}" type="text" name="sid"/>
                                             <input type="hidden" value="${agentRole.name}" name="roleName"/>
-                                            <input id="assign-sid-agent-submit-${agentRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
-                                                   class="submit"/>
-                                        </div>
-                                    </form>
-                                    <form action="${rootUrl}/${it.urlName}/removeSidFromAgentRole" method="POST">
-                                        <div class="form-row">
-                                            <label for="remove-sid-agent-${index}" style="margin-right: 10px;">
-                                                ${%removeSid}
-                                            </label>
-                                            <input id="remove-sid-agent-input-${agentRole.name}" type="text" name="sid"/>
-                                            <input type="hidden" value="${agentRole.name}" name="roleName"/>
-                                            <input id="remove-sid-agent-submit-${agentRole.name}" type="submit" style="margin-left: 10px;" value="${%submit}"
-                                                    class="submit"/>
+                                            <br/>
+                                            <input id="assign-sid-agent-submit-${agentRole.name}" type="submit"
+                                                   style="margin-left: 40px;" value="Assign" name="action" class="submit"/>
+                                            <input id="remove-sid-agent-submit-${agentRole.name}" type="submit"
+                                                   style="margin-left: 10px;" value="Remove" name="action" class="submit"/>
                                         </div>
                                     </form>
                                     <button class="collapsible">${%viewPermissions}</button>
