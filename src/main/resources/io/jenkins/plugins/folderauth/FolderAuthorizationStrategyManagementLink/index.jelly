@@ -40,7 +40,6 @@
                                                style="margin-left: 10px;" value="Remove" name="action" class="submit"/>
                                     </div>
                                 </form>
-                                <br/>
                                 <button class="collapsible">${%viewPermissions}</button>
                                 <div class="collapsible-content">
                                     <ul>
