@@ -204,7 +204,7 @@
                     </select>
                     <div class="form-row">
                         <button id="add-folder-role-button" type="button" class="submit-button"
-                                onclick="addFolderRole();">
+                                onclick="addFolderRole();" disabled="disabled">
                             ${%addRole}
                         </button>
                     </div>
