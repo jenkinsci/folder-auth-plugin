@@ -9,12 +9,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A role as an immutable object
  */
 @Restricted(NoExternalUse.class)
-public abstract class AbstractRole {
+public abstract class AbstractRole implements Comparable<AbstractRole> {
+    @Override
+    public int compareTo(@Nonnull AbstractRole other) {
+        return this.name.compareTo(other.name);
+    }
+
     /**
      * The unique name of the role.
      */
@@ -70,9 +77,21 @@ public abstract class AbstractRole {
      * This method, however, does not return all permissions implied by this {@link AbstractRole}
      *
      * @return the permissions assigned to the role.
+     * @see AbstractRole#getPermissionsUnsorted() when the permissions are not needed in a sorted order.
      */
     @Nonnull
-    public Set<PermissionWrapper> getPermissions() {
+    public SortedSet<PermissionWrapper> getPermissions() {
+        return Collections.unmodifiableSortedSet(new TreeSet<>(permissionWrappers));
+    }
+
+    /**
+     * The permissions assigned to the role in an unsorted order.
+     *
+     * @return permissions in an unsorted order.
+     * @see AbstractRole#getPermissions() when permissions are needed in a sorted order.
+     */
+    @Nonnull
+    public Set<PermissionWrapper> getPermissionsUnsorted() {
         return Collections.unmodifiableSet(permissionWrappers);
     }
 
@@ -87,14 +106,14 @@ public abstract class AbstractRole {
     }
 
     /**
-     * Return a comma separated list of sids assigned to this role
+     * Return a sorted comma separated list of sids assigned to this role
      *
-     * @return a comma separated list of sids assigned to this role
+     * @return a sorted comma separated list of sids assigned to this role
      */
     @Nonnull
     @SuppressWarnings("unused") // used by index.jelly
     public String getSidsCommaSeparated() {
-        String string = sids.toString();
+        String string = new TreeSet<>(sids).toString();
         return string.substring(1, string.length() - 1);
     }
 }

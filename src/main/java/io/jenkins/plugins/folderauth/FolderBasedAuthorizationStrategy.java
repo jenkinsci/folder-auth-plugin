@@ -271,7 +271,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             acl = new GenericAclImpl();
         }
         acl.assignPermissions(role.getSids(),
-            role.getPermissions().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
+            role.getPermissionsUnsorted().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
         acls.put(fullName, acl);
     }
 
