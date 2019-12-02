@@ -147,3 +147,7 @@ select[multiple] {
     min-height: 125px;
     max-height: 125px;
 }
+
+.center {
+    justify-content: center;
+}
