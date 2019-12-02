@@ -120,7 +120,7 @@
                                     <div class="form-row">
                                         <div>
                                             <label for="assign-sid-folder-${index}" style="margin-right: 10px;">
-                                                ${%assignSid}
+                                                ${%sid}
                                             </label>
                                             <input id="assign-sid-folder-${index}" type="text" name="sid"/>
                                         </div>
@@ -230,7 +230,7 @@
                                     <div class="form-row">
                                         <div>
                                             <label for="assign-sid-agent-${index}" style="margin-right: 10px;">
-                                                ${%assignSid}
+                                                ${%sid}
                                             </label>
                                             <input id="assign-sid-agent-${index}" type="text"/>
                                         </div>
