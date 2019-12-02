@@ -145,7 +145,6 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     /**
      * Assigns {@code sid} to the global role identified by {@code roleName}.
      * <p>
-     * Does not do anything if a role corresponding to the {@code roleName} does not exist.
      *
      * @param roleName the name of the global to which {@code sid} will be assigned to.
      * @param sid      the sid of the user/group to be assigned.
@@ -377,5 +376,58 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         groups.stream().map(PermissionGroup::getPermissions).forEach(safePermissions::addAll);
         safePermissions.removeAll(PermissionWrapper.DANGEROUS_PERMISSIONS);
         return safePermissions;
+    }
+
+    /**
+     * Removes {@code sid} from the global role identified by {@code roleName}.
+     *
+     * @param roleName the name of the global role from which {@code sid} will be removed.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doRemoveSidFromGlobalRole(@QueryParameter(required = true) String roleName,
+                                          @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.removeSidFromGlobalRole(sid, roleName);
+        redirect();
+    }
+
+    /**
+     * Removes {@code sid} from the folder role identified by {@code roleName}.
+     *
+     * @param roleName the name of the folder role from which {@code sid} will be removed.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doRemoveSidFromFolderRole(@QueryParameter(required = true) String roleName,
+                                          @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.removeSidFromFolderRole(sid, roleName);
+        redirect();
+    }
+    /**
+     * Removes {@code sid} from the agent role identified by {@code roleName}.
+     *
+     * @param roleName the name of the agent from which {@code sid} will be removed.
+     * @param sid      the sid of the user/group to be assigned.
+     * @throws IllegalStateException    when {@link Jenkins#getAuthorizationStrategy()} is
+     *                                  not {@link FolderBasedAuthorizationStrategy}
+     * @throws IllegalArgumentException when no role with name equal to {@code roleName} exists.
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doRemoveSidFromAgentRole(@QueryParameter(required = true) String roleName,
+                                          @QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, roleName);
+        redirect();
     }
 }
