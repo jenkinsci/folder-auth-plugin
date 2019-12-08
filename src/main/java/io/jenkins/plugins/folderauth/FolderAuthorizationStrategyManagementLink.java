@@ -59,7 +59,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Override
     public String getIconFileName() {
         return Jenkins.get().getAuthorizationStrategy() instanceof FolderBasedAuthorizationStrategy ?
-                   "lock.png" : null;
+            "lock.png" : null;
     }
 
     /**
@@ -425,7 +425,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @RequirePOST
     @Restricted(NoExternalUse.class)
     public void doRemoveSidFromAgentRole(@QueryParameter(required = true) String roleName,
-                                          @QueryParameter(required = true) String sid) {
+                                         @QueryParameter(required = true) String sid) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, roleName);
         redirect();

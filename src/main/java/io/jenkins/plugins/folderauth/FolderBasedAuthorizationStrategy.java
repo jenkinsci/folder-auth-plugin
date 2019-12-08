@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +56,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     private final Set<AgentRole> agentRoles;
     private final Set<GlobalRole> globalRoles;
     private final Set<FolderRole> folderRoles;
+    private final HashMap<Class, Set> roleMap;
 
     /**
      * An {@link ACL} that works only on {@link #globalRoles}.
@@ -85,6 +87,10 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         this.agentRoles = new HashSet<>(agentRoles);
         this.globalRoles = new HashSet<>(globalRoles);
         this.folderRoles = new HashSet<>(folderRoles);
+        this.roleMap = new HashMap<>();
+        roleMap.put(AgentRole.class, this.agentRoles);
+        roleMap.put(GlobalRole.class, this.globalRoles);
+        roleMap.put(FolderRole.class, this.folderRoles);
 
         // the sets above should NOT be modified. They are not Collections.unmodifiableSet()
         // because that complicates the serialized XML and add unnecessary nesting.
@@ -205,6 +211,36 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         return Collections.unmodifiableCollection(groups);
     }
 
+    // TODO - test below method
+    /**
+     * Returns all {@link AbstractRole} in {@link FolderBasedAuthorizationStrategy}.
+     * @return HashMap of all roles ({@link GlobalRole}, {@link FolderRole}, {@link AgentRole})
+     */
+    public HashMap<Class, Set> getAllRoles() {
+        HashMap<Class, Set> roleMap = new HashMap<>();
+        roleMap.put(GlobalRole.class, getRoles(GlobalRole.class));
+        roleMap.put(FolderRole.class, getRoles(FolderRole.class));
+        roleMap.put(AgentRole.class, getRoles(AgentRole.class));
+        return roleMap;
+    }
+
+    /**
+     * Returns the role of type {@code roleClass}
+     * @param roleClass the class of the type of role to get
+     * @return Set of roles (either {@link GlobalRole}, {@link FolderRole} or {@link AgentRole}) on which this
+     * {@link AuthorizationStrategy} works.
+     * @throws IllegalArgumentException when the class argument is not a subclass of {@link AbstractRole}
+     */
+    public Set getRoles(Class<?> roleClass) throws IllegalArgumentException {
+
+        Set roleSet = roleMap.get(roleClass);
+        if (roleSet != null) {
+            return Collections.unmodifiableSet(roleSet);
+        } else {
+            throw new IllegalArgumentException("Unexpected argument roleClass received: " + roleClass.toString());
+        }
+    }
+
     /**
      * Returns the {@link GlobalRole}s on which this {@link AuthorizationStrategy} works.
      *
@@ -212,7 +248,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     @Nonnull
     public Set<GlobalRole> getGlobalRoles() {
-        return Collections.unmodifiableSet(globalRoles);
+        return getRoles(GlobalRole.class);
     }
 
     /**
@@ -222,7 +258,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     @Nonnull
     public Set<AgentRole> getAgentRoles() {
-        return Collections.unmodifiableSet(agentRoles);
+        return getRoles(AgentRole.class);
     }
 
     /**
@@ -232,7 +268,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      */
     @Nonnull
     public Set<FolderRole> getFolderRoles() {
-        return Collections.unmodifiableSet(folderRoles);
+        return getRoles(FolderRole.class);
     }
 
     /**
@@ -284,9 +320,9 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
         agentAcls = new ConcurrentHashMap<>();
 
         jobAclCache = CacheBuilder.newBuilder()
-                          .expireAfterWrite(1, TimeUnit.HOURS)
-                          .maximumSize(2048)
-                          .build();
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .maximumSize(2048)
+            .build();
 
         globalAcl = new GlobalAclImpl(globalRoles);
         updateJobAcls();
