@@ -138,7 +138,7 @@ Using `curl`, for example, a sid "foo" can be assigned to the role "bar"
 [source,bash]
 ----
 curl -X POST -d 'roleName=bar&sid=foo' \
-    http://localhost:8080/folder-auth/assignSidToGlobalRole
+    http://localhost:8080/folder-auth/assignSidToAgentRole
 ----
 
 == API methods for deleting a role
