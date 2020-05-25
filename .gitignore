@@ -41,3 +41,11 @@ com_crashlytics_export_strings.xml
 
 # JMH benchmark reports
 jmh-report.json
+
+# Node.js modules
+node_modules
+
+# Webpack build output
+src/main/webapp/js
+
+npm-debug.log
