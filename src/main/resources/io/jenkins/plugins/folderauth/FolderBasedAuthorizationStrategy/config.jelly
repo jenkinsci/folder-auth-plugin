@@ -1,7 +1,4 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-    <f:block>
-        Roles can be configured on the 'Folder Authorization Strategy' page available from
-        <a href="${rootURL}/manage">${%Manage Jenkins}.</a>
-    </f:block>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:block>${%blurb(rootURL)}</f:block>
 </j:jelly>
