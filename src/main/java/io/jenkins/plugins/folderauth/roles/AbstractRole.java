@@ -4,8 +4,10 @@ import hudson.model.User;
 import hudson.security.SecurityRealm;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import jenkins.model.Jenkins;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.dao.DataAccessException;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -124,7 +126,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
                 sr.loadUserByUsername(sid);
                 User u = User.getById(sid, false);
                 sb.append(sid).append("(").append(u.getFullName()).append("), ");
-            } catch (Exception e) {
+            } catch (UsernameNotFoundException | DataAccessException | NullPointerException e) {
                 // on any exception just add the sid
                 // this could happen either because SID lookup error or no FullName set
                 sb.append(sid).append(", ");
