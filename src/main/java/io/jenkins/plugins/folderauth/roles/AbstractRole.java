@@ -125,7 +125,8 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
             try {
                 sr.loadUserByUsername(sid);
                 User u = User.getById(sid, false);
-                sb.append(sid).append("(").append(u.getFullName()).append("), ");
+                String fullName = u.getFullName();
+                sb.append(sid).append("(").append(fullName).append("), ");
             } catch (UsernameNotFoundException | DataAccessException | NullPointerException e) {
                 // on any exception just add the sid
                 // this could happen either because SID lookup error or no FullName set
