@@ -83,6 +83,19 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         return Messages.FolderBasedAuthorizationStrategy_DisplayName();
     }
 
+    /**
+     * Name of the category for this management link. Exists so that plugins with core dependency pre-dating the version
+     * when this was introduced can define a category.
+     *
+     * TODO when the core version is >2.226 change this to override {@code getCategory()} instead
+     *
+     * @return name of the desired category, one of the enum values of Category, e.g. {@code STATUS}.
+     * @since 2.226
+     */
+    public String getCategoryName() {
+        return "SECURITY";
+    }
+
     @Nonnull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
