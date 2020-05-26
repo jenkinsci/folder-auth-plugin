@@ -47,5 +47,7 @@ node_modules
 
 # Webpack build output
 src/main/webapp/js
-
 npm-debug.log
+
+# node binaries from frontend-maven-plugin
+node/
