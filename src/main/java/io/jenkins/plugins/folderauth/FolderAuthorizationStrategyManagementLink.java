@@ -1,6 +1,7 @@
 package io.jenkins.plugins.folderauth;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Api;
@@ -17,6 +18,7 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import io.jenkins.plugins.folderauth.misc.AgentRoleCreationRequest;
+import io.jenkins.plugins.folderauth.misc.FolderBasedAuthorizationStrategyWrapper;
 import io.jenkins.plugins.folderauth.misc.FolderRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.GlobalRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
@@ -25,6 +27,7 @@ import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -429,5 +432,19 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, roleName);
         redirect();
+    }
+
+    @GET
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public JSONObject doAuthorizationStrategy() throws IllegalStateException{
+        Jenkins jenkins = Jenkins.get();
+        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
+        if (!(strategy instanceof FolderBasedAuthorizationStrategy)) {
+            throw new IllegalStateException("Folder Based Authorization Strategy is not active.");
+        }
+        FolderBasedAuthorizationStrategy folderStrategy = (FolderBasedAuthorizationStrategy) strategy;
+        return JSONObject.fromObject(new FolderBasedAuthorizationStrategyWrapper(folderStrategy.getGlobalRoles(),
+            folderStrategy.getFolderRoles(), folderStrategy.getAgentRoles()));
     }
 }
