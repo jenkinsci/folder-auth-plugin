@@ -59,7 +59,7 @@ function removeSid(roleType, roleName, sidInputBoxId) {
     request.onload = () => {
         if (request.status === 200) {
             showNotificationOK('Sid removed successfully.');
-        } else {s
+        } else {
             showNotificationERROR('Unable to remove the sid.' + request.responseText);
         }
     };
