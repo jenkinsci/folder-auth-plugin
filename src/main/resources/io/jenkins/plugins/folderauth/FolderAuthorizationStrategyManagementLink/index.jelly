@@ -3,6 +3,7 @@
     <l:layout permission="${app.ADMINISTER}" norefresh="true" title="${%title}">
         <st:include it="${app}" page="sidepanel.jelly" optional="true"/>
         <l:main-panel>
+            <script src="${rootURL}/plugin/folder-auth/js/notification.js"/>
             <script src="${rootURL}/plugin/folder-auth/js/addrole.js"/>
             <script src="${rootURL}/plugin/folder-auth/js/folders.js"/>
             <script src="${rootURL}/plugin/folder-auth/js/managesids.js"/>

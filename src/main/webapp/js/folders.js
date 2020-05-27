@@ -13,7 +13,7 @@ const getFolders = () => {
     };
 
     xhr.onerror = () => {
-        alert(`Unable to get the list of folders: ${xhr.responseText}`);
+        showNotificationERROR(`Unable to get the list of folders: ${xhr.responseText}`);
     };
 };
 

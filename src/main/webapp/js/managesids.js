@@ -21,16 +21,16 @@ function assignSid(roleType, roleName, sidInputBoxId) {
     request.open('POST', url);
     request.onload = () => {
         if (request.status === 200) {
-            alert('Sid added successfully.');
+            showNotificationOK('Sid added successfully.');
             location.reload();
         } else {
-            alert('Unable to remove the sid.' + request.responseText);
+            showNotificationERROR('Unable to remove the sid.' + request.responseText);
         }
 
     };
 
     request.onerror = () => {
-        alert('Unable to add the sid to the role: ' + request.responseText);
+        showNotificationERROR('Unable to add the sid to the role: ' + request.responseText);
     };
 
     // see addRole.js
@@ -59,15 +59,15 @@ function removeSid(roleType, roleName, sidInputBoxId) {
     request.open('POST', url);
     request.onload = () => {
         if (request.status === 200) {
-            alert('Sid removed successfully.');
+            showNotificationOK('Sid removed successfully.');
             location.reload();
         } else {
-            alert('Unable to remove the sid.' + request.responseText);
+            showNotificationERROR('Unable to remove the sid.' + request.responseText);
         }
     };
 
     request.onerror = () => {
-        alert('Unable to remove the sid from the role: ' + request.responseText);
+        showNotificationERROR('Unable to remove the sid from the role: ' + request.responseText);
     };
 
     // see addRole.js

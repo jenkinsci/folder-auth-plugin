@@ -7,7 +7,7 @@
 const addGlobalRole = () => {
     const roleName = document.getElementById('globalRoleName').value;
     if (!roleName || roleName.length < 3) {
-        alert('Please enter a valid name for the role to be added.');
+        showNotificationERROR('Please enter a valid name for the role to be added.');
         return;
     }
 
@@ -17,7 +17,7 @@ const addGlobalRole = () => {
     };
 
     if (response.permissions.length <= 0) {
-        alert('Please select at least one permission');
+        showNotificationERROR('Please select at least one permission');
         return;
     }
 
@@ -31,7 +31,7 @@ const addGlobalRole = () => {
 const addFolderRole = () => {
     const roleName = document.getElementById('folderRoleName').value;
     if (!roleName || roleName.length < 3) {
-        alert('Please enter a valid name for the role to be added');
+        showNotificationERROR('Please enter a valid name for the role to be added');
         return;
     }
 
@@ -42,12 +42,12 @@ const addFolderRole = () => {
     };
 
     if (!response.permissions || response.permissions.length <= 0) {
-        alert('Please select at least one permission');
+        showNotificationERROR('Please select at least one permission');
         return;
     }
 
     if (!response.folderNames || response.folderNames.length <= 0) {
-        alert('Please select at least one folder on which this role will be applicable');
+        showNotificationERROR('Please select at least one folder on which this role will be applicable');
         return;
     }
 
@@ -61,7 +61,7 @@ const addFolderRole = () => {
 const addAgentRole = () => {
     const roleName = document.getElementById('agentRoleName').value;
     if (!roleName || roleName.length < 3) {
-        alert('Please enter a valid name for the role to be added');
+        showNotificationERROR('Please enter a valid name for the role to be added');
         return;
     }
 
@@ -72,12 +72,12 @@ const addAgentRole = () => {
     };
 
     if (!response.permissions || response.permissions.length <= 0) {
-        alert('Please select at least one permission');
+        showNotificationERROR('Please select at least one permission');
         return;
     }
 
     if (!response.agentNames || response.agentNames.length <= 0) {
-        alert('Please select at least one agent on which this role will be applicable');
+        showNotificationERROR('Please select at least one agent on which this role will be applicable');
         return;
     }
 
@@ -100,10 +100,10 @@ const sendPostRequest = (postUrl, json) => {
 
     xhr.onload = () => {
         if (xhr.status === 200) {
-            alert('The role was added successfully');
-            location.reload(); // refresh the page
+            showNotificationOK('The role was added successfully');
+            //location.reload(); // refresh the page
         } else {
-            alert('Unable to add the role\n' + xhr.responseText);
+            showNotificationERROR('Unable to add the role\n' + xhr.responseText);
         }
     };
 
