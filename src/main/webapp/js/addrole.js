@@ -101,7 +101,6 @@ const sendPostRequest = (postUrl, json) => {
     xhr.onload = () => {
         if (xhr.status === 200) {
             showNotificationOK('The role was added successfully');
-            //location.reload(); // refresh the page
         } else {
             showNotificationERROR('Unable to add the role\n' + xhr.responseText);
         }

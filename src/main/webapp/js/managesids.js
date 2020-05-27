@@ -22,7 +22,6 @@ function assignSid(roleType, roleName, sidInputBoxId) {
     request.onload = () => {
         if (request.status === 200) {
             showNotificationOK('Sid added successfully.');
-            location.reload();
         } else {
             showNotificationERROR('Unable to remove the sid.' + request.responseText);
         }
@@ -60,8 +59,7 @@ function removeSid(roleType, roleName, sidInputBoxId) {
     request.onload = () => {
         if (request.status === 200) {
             showNotificationOK('Sid removed successfully.');
-            location.reload();
-        } else {
+        } else {s
             showNotificationERROR('Unable to remove the sid.' + request.responseText);
         }
     };
