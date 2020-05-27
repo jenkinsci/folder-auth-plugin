@@ -1,7 +1,6 @@
 package io.jenkins.plugins.folderauth;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
-import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Api;
@@ -437,8 +436,9 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @GET
     @Nonnull
     @Restricted(NoExternalUse.class)
-    public JSONObject doAuthorizationStrategy() throws IllegalStateException{
+    public JSONObject doAuthorizationStrategy() throws IllegalStateException {
         Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (!(strategy instanceof FolderBasedAuthorizationStrategy)) {
             throw new IllegalStateException("Folder Based Authorization Strategy is not active.");
