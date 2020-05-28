@@ -1,72 +1,50 @@
 import * as React from 'react';
+import {FunctionComponent, useEffect, useState} from 'react';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 
-import Container from "@material-ui/core/Container";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-import AppBar from "@material-ui/core/AppBar";
-import {Theme, withStyles} from "@material-ui/core/styles";
-import {Box} from "@material-ui/core";
+import RoleType from './model/RoleType';
 
-const styles = (theme: Theme) => ({
-  root: {
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-  }
-});
+import './css/App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-export interface AppState {
-  readonly value: number;
-  authStrategy: string;
+// @ts-ignore
+const rootUrl = rootURL;
+// @ts-ignore
+const csrfCrumb = crumb.value;
+
+
+const App: FunctionComponent = () => {
+  const [authorizationStrategy, setAuthorizationStrategy] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const request = await fetch(`${rootUrl}/folder-auth/authorizationStrategy`, {
+        headers: {
+          'Jenkins-Crumb': csrfCrumb,
+        },
+      });
+      const data = await request.json();
+      setAuthorizationStrategy(data);
+    })().catch(err => {
+      throw new Error(`Unable to load authorization strategy: ${err}`);
+    });
+  });
+
+  return (
+    <Tabs defaultActiveKey={RoleType.GLOBAL} id='role-type-tabs' variant='tabs'>
+      <Tab eventKey={RoleType.GLOBAL} title='Global Roles' tabClassName='tab'>
+        Hello world - Global Roles
+      </Tab>
+      <Tab eventKey={RoleType.FOLDER} title='Folder Roles' tabClassName='tab'>
+        Hello world - Folder Roles <br/>
+        {authorizationStrategy && JSON.stringify(authorizationStrategy)}
+      </Tab>
+      <Tab eventKey={RoleType.AGENT} title='Agent Roles' tabClassName='tab'>
+        Hello world - Agent Roles
+      </Tab>
+    </Tabs>
+  );
 }
 
-class App extends React.Component<{ classes: any }, AppState> {
-  constructor(props: { classes: any }) {
-    super(props);
-    this.state = {
-      value: 0,
-      authStrategy: '',
-    }
-  }
-
-  async componentDidMount(): Promise<void> {
-    // @ts-ignore
-    const rootUrl = rootURL;
-    // @ts-ignore
-    const csrfCrumb = crumb.value;
-
-    const request = await fetch(`${rootUrl}/folder-auth/authorizationStrategy`, {
-      headers: {
-        'Jenkins-Crumb': csrfCrumb,
-      }
-    })
-    const data = await (await request.blob()).text();
-
-    this.setState({ value: this.state.value, authStrategy: data});
-  }
-
-  render() {
-    const {classes} = this.props;
-    return (
-      <Container>
-        <div className={classes.root}>
-          <AppBar position='static'>
-            <Tabs value={this.state.value}
-                  centered
-                  onChange={(_, newValue: number) => {
-                    this.setState({value: newValue});
-                  }}>
-              <Tab label='Global Roles'/>
-              <Tab label='Folder Roles'/>
-              <Tab label='Agent Roles'/>
-            </Tabs>
-          </AppBar>
-          <Box>
-            {this.state.authStrategy}
-          </Box>
-        </div>
-      </Container>
-    )
-  }
-}
-
-export default withStyles(styles)(App);
+export default App;
