@@ -11,5 +11,5 @@ charset = utf-8
 [*.properties]
 charset = latin1
 
-[*.{yaml, yml}]
+[*.{ts, tsx, js, jsx, json, yaml, yml, babelrc}]
 indent_size = 2

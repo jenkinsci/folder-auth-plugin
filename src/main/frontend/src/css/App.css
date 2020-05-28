@@ -1,0 +1,5 @@
+a.tab:link,
+a.tab:visited {
+    color: #007bff;
+    text-decoration: none !important;
+}
