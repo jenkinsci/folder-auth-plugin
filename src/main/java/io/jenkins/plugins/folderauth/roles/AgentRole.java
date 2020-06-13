@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -35,7 +36,8 @@ public class AgentRole extends AbstractRole {
      * @return sorted agent names as a comma separated string list
      */
     @Nonnull
-    @SuppressWarnings("unused") // used in index.jelly
+    @JsonIgnore
+    @Deprecated
     public String getAgentNamesCommaSeparated() {
         String csv = new TreeSet<>(agents).toString();
         return csv.substring(1, csv.length() - 1);

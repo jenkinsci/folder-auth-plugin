@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -91,6 +92,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      * @see AbstractRole#getPermissions() when permissions are needed in a sorted order.
      */
     @Nonnull
+    @JsonIgnore
     public Set<PermissionWrapper> getPermissionsUnsorted() {
         return Collections.unmodifiableSet(permissionWrappers);
     }
@@ -111,7 +113,8 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      * @return a sorted comma separated list of sids assigned to this role
      */
     @Nonnull
-    @SuppressWarnings("unused") // used by index.jelly
+    @Deprecated
+    @JsonIgnore
     public String getSidsCommaSeparated() {
         String string = new TreeSet<>(sids).toString();
         return string.substring(1, string.length() - 1);

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {FunctionComponent, useEffect, useState} from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
@@ -29,7 +29,7 @@ const App: FunctionComponent = () => {
     })().catch(err => {
       throw new Error(`Unable to load authorization strategy: ${err}`);
     });
-  });
+  }, []);
 
   return (
     <Tabs defaultActiveKey={RoleType.GLOBAL} id='role-type-tabs' variant='tabs'>

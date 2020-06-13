@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.misc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import hudson.PluginManager;
 import hudson.security.Permission;
 import io.jenkins.plugins.folderauth.Messages;
@@ -30,6 +31,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     private transient Permission permission;
     private final String id;
 
+    @SuppressWarnings("deprecation")
     @Restricted(NoExternalUse.class)
     public static final Set<Permission> DANGEROUS_PERMISSIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             Jenkins.RUN_SCRIPTS,
@@ -53,6 +55,11 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
         return String.format("%s/%s", permission.group.getId(), permission.name);
     }
 
+    @Restricted(NoExternalUse.class) // Restricted so JCasC does not pick it up
+    public String getPermissionId() {
+        return id;
+    }
+
     /**
      * Used to setup the permission when deserialized
      *
@@ -72,6 +79,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
      * @return the permission corresponding to this {@link PermissionWrapper}
      */
     @Nonnull
+    @JsonIgnore
     public Permission getPermission() {
         return permission;
     }

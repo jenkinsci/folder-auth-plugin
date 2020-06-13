@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -39,7 +40,8 @@ public class FolderRole extends AbstractRole {
      * @return sorted folder names as a comma separated string list
      */
     @Nonnull
-    @SuppressWarnings("unused") // used in index.jelly
+    @Deprecated
+    @JsonIgnore
     public String getFolderNamesCommaSeparated() {
         String csv = new TreeSet<>(folders).toString();
         return csv.substring(1, csv.length() - 1);

@@ -1,6 +1,9 @@
 package io.jenkins.plugins.folderauth;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Api;
@@ -26,11 +29,11 @@ import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.json.JsonBody;
@@ -41,6 +44,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +60,7 @@ import java.util.stream.Collectors;
 @ParametersAreNonnullByDefault
 public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     private static final Logger LOGGER = Logger.getLogger(FolderAuthorizationStrategyManagementLink.class.getName());
+    private static final JsonFactory jsonFactory = new JsonFactory();
 
     @CheckForNull
     @Override
@@ -415,6 +420,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         FolderAuthorizationStrategyAPI.removeSidFromFolderRole(sid, roleName);
         redirect();
     }
+
     /**
      * Removes {@code sid} from the agent role identified by {@code roleName}.
      *
@@ -434,17 +440,21 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     }
 
     @GET
-    @Nonnull
     @Restricted(NoExternalUse.class)
-    public JSONObject doAuthorizationStrategy() throws IllegalStateException {
+    public void doAuthorizationStrategy(StaplerResponse response) throws IllegalStateException, IOException {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
         if (!(strategy instanceof FolderBasedAuthorizationStrategy)) {
             throw new IllegalStateException("Folder Based Authorization Strategy is not active.");
         }
-        FolderBasedAuthorizationStrategy folderStrategy = (FolderBasedAuthorizationStrategy) strategy;
-        return JSONObject.fromObject(new FolderBasedAuthorizationStrategyWrapper(folderStrategy.getGlobalRoles(),
-            folderStrategy.getFolderRoles(), folderStrategy.getAgentRoles()));
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+        Writer writer = response.getWriter();
+        FolderBasedAuthorizationStrategyWrapper wrapper = new FolderBasedAuthorizationStrategyWrapper((FolderBasedAuthorizationStrategy) strategy);
+        JsonGenerator generator = jsonFactory.createGenerator(writer);
+        generator.setCodec(new ObjectMapper());
+        generator.writeObject(wrapper);
+        writer.flush();
     }
 }
