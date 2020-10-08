@@ -16,7 +16,7 @@ function assignSid(roleType, roleName, sidInputBoxId) {
         throw  new Error('Unknown Role Type');
     }
 
-    const url = `${rootURL}/folder-auth/assignSidTo${roleType[0].toUpperCase()}${roleType.substring(1)}Role`;
+    const url = rootURL + "/folder-auth/assignSidTo" + roleType[0].toUpperCase() + roleType.substring(1) + "Role";
     const request = new XMLHttpRequest();
     request.open('POST', url);
     request.onload = () => {
@@ -54,7 +54,7 @@ function removeSid(roleType, roleName, sidInputBoxId) {
         throw  new Error('Unknown Role Type');
     }
 
-    const url = `${rootURL}/folder-auth/removeSidFrom${roleType[0].toUpperCase()}${roleType.substring(1)}Role`;
+    const url = rootURL + "/folder-auth/removeSidFrom" + roleType[0].toUpperCase() + roleType.substring(1) + "Role";
     const request = new XMLHttpRequest();
     request.open('POST', url);
     request.onload = () => {

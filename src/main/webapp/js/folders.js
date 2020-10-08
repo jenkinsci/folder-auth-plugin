@@ -5,7 +5,7 @@
  */
 const getFolders = () => {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${rootURL}/folder-auth/getAllFolders`, true);
+    xhr.open('GET', rootURL + "/folder-auth/getAllFolders", true);
     xhr.send(null);
 
     xhr.onload = () => {
@@ -13,7 +13,7 @@ const getFolders = () => {
     };
 
     xhr.onerror = () => {
-        alert(`Unable to get the list of folders: ${xhr.responseText}`);
+        alert("Unable to get the list of folders: " + xhr.responseText);
     };
 };
 

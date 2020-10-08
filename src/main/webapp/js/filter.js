@@ -7,19 +7,19 @@
      * @returns {Promise<void>} a promise that completes when search completes
      * @throws Error when unknown type is provided.
      */
-    const doFilter = async (type) => {
+    const doFilter = (type) => {
         let container;
         switch (type) {
             case 'global':
             case 'agent':
             case 'folder':
-                container = document.getElementById(`${type}RoleContainer`);
+                container = document.getElementById(type + "RoleContainer");
                 break;
             default:
                 throw new Error('Unknown Role type');
         }
 
-        const str = document.getElementById(`${type}RoleFilter`).value;
+        const str = document.getElementById(type + "RoleFilter").value;
         let matching = 0;
 
         for (let i = 0; i < container.childNodes.length; i++) {
@@ -32,7 +32,7 @@
             }
         }
 
-        const labelId = `no-matching-${type}-role-label`;
+        const labelId = "no-matching-" + type + "-role-label";
         const label = document.getElementById(labelId);
 
         if (!matching) {
