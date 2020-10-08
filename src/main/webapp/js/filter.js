@@ -7,7 +7,7 @@
      * @returns {Promise<void>} a promise that completes when search completes
      * @throws Error when unknown type is provided.
      */
-    const doFilter = (type) => {
+    const doFilter = (type) => {  // FIXME - add back async after reformatting the method
         let container;
         switch (type) {
             case 'global':
