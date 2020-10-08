@@ -271,7 +271,7 @@ public class FolderAuthorizationWebAPITest {
 
     @Test
     public void testDeleteAgentRole() throws IOException {
-        testAddFolderRole();
+        testAddAgentRole();
 
         URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteAgentRole");
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
