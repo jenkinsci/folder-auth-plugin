@@ -51,7 +51,7 @@ public class FolderAuthorizationWebAPITest {
         FolderAuthorizationStrategyAPI.assignSidToGlobalRole("adminUser", "admin");
         webClient = jenkinsRule.createWebClient();
         webClient.login("adminUser", "adminUser");
-
+        webClient.getOptions().setThrowExceptionOnScriptError(false);
     }
 
     @Test
