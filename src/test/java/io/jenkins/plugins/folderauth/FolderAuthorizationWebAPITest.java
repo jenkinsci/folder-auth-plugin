@@ -45,14 +45,11 @@ public class FolderAuthorizationWebAPITest {
 
         jenkinsRule.jenkins.setSecurityRealm(jenkinsRule.createDummySecurityRealm());
         jenkinsRule.jenkins.setCrumbIssuer(null);
-        // Setting authorization strategy
         FolderBasedAuthorizationStrategy strategy = new FolderBasedAuthorizationStrategy.DescriptorImpl()
             .newInstance(null, new JSONObject(true));
         jenkinsRule.jenkins.setAuthorizationStrategy(strategy);
 
-        // Adding an admin user
         User.getById("adminUser", true);
-        // Assigning web client to admin
         FolderAuthorizationStrategyAPI.assignSidToGlobalRole("adminUser", "admin");
         webClient = jenkinsRule.createWebClient();
         webClient.login("adminUser", "adminUser");
@@ -71,10 +68,6 @@ public class FolderAuthorizationWebAPITest {
 
         addRole(RoleType.GLOBAL, jsonString);
         verifyThatRoleExists(RoleType.GLOBAL, map);
-    }
-
-    private enum RoleType {
-        GLOBAL, FOLDER, AGENT
     }
 
     @Test
@@ -215,6 +208,10 @@ public class FolderAuthorizationWebAPITest {
         for (AgentRole agentRole : strategy.getAgentRoles()) {
             assertNotEquals("globalRole", agentRole.getName());
         }
+    }
+
+    private enum RoleType {
+        GLOBAL, FOLDER, AGENT
     }
 
     /**
