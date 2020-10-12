@@ -111,7 +111,7 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        verifyUserAssignedToRole(RoleType.GLOBAL, "alice", "globalRole");
+        assertTrue(userAssignedToRole(RoleType.GLOBAL, "alice", "globalRole"));
     }
 
     @Test
@@ -129,7 +129,7 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        verifyUserAssignedToRole(RoleType.FOLDER, "alice", "folderRole");
+        assertTrue(userAssignedToRole(RoleType.FOLDER, "alice", "folderRole"));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        verifyUserAssignedToRole(RoleType.AGENT, "alice", "agentRole");
+        assertTrue(userAssignedToRole(RoleType.AGENT, "alice", "agentRole"));
     }
 
     @Test
@@ -277,8 +277,9 @@ public class FolderAuthorizationWebAPITest {
      * @param roleType Type of role
      * @param sid User ID
      * @param roleName Name of the role
+     * @return true if user is assigned to role
      */
-    private void verifyUserAssignedToRole(RoleType roleType, String sid, String roleName) {
+    private boolean userAssignedToRole(RoleType roleType, String sid, String roleName) {
 
         FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
         boolean assigned = false;
@@ -297,9 +298,9 @@ public class FolderAuthorizationWebAPITest {
                 throw new IllegalArgumentException("Unexpected role. Expecting GLOBAL, FOLDER or AGENT");
         }
 
-        for (AbstractRole folderRole : roles) {
-            if (folderRole.getName().equals(roleName)) {
-                assigned = folderRole.getSids().contains(sid);
+        for (AbstractRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                assigned = role.getSids().contains(sid);
                 break;
             }
         }
