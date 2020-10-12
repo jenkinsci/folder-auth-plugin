@@ -21,7 +21,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
@@ -67,7 +66,7 @@ public class FolderAuthorizationWebAPITest {
         String jsonString = json.toString();
 
         addRole(RoleType.GLOBAL, jsonString);
-        verifyThatRoleExists(RoleType.GLOBAL, map);
+        assertTrue(roleExists(RoleType.GLOBAL, "globalRole"));
     }
 
     @Test
@@ -81,7 +80,7 @@ public class FolderAuthorizationWebAPITest {
         String jsonString = json.toString();
 
         addRole(RoleType.FOLDER, jsonString);
-        verifyThatRoleExists(RoleType.FOLDER, map);
+        assertTrue(roleExists(RoleType.FOLDER, "folderRole"));
     }
 
     @Test
@@ -94,7 +93,7 @@ public class FolderAuthorizationWebAPITest {
         String jsonString = json.toString();
 
         addRole(RoleType.AGENT, jsonString);
-        verifyThatRoleExists(RoleType.AGENT, map);
+        assertTrue(roleExists(RoleType.AGENT, "agentRole"));
     }
 
     @Test
@@ -165,10 +164,7 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        for (GlobalRole globalRole : strategy.getGlobalRoles()) {
-            assertNotEquals("globalRole", globalRole.getName());
-        }
+        assertFalse(roleExists(RoleType.GLOBAL, "globalRole"));
     }
 
     @Test
@@ -185,10 +181,7 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        for (FolderRole folderRole : strategy.getFolderRoles()) {
-            assertNotEquals("globalRole", folderRole.getName());
-        }
+        assertFalse(roleExists(RoleType.FOLDER, "folderRole"));
     }
 
     @Test
@@ -204,10 +197,7 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        for (AgentRole agentRole : strategy.getAgentRoles()) {
-            assertNotEquals("globalRole", agentRole.getName());
-        }
+        assertFalse(roleExists(RoleType.AGENT, "agentRole"));
     }
 
     private enum RoleType {
@@ -246,28 +236,40 @@ public class FolderAuthorizationWebAPITest {
     /**
      * Util method to verify that the role exists
      * @param roleType Type of role
-     * @param roleMap Map object that represents the role
+     * @param roleName Map object that represents the role
      * @throws NoSuchMethodException
      * @throws InvocationTargetException
      * @throws IllegalAccessException
+     * @return true if role exists
      */
-    private void verifyThatRoleExists(RoleType roleType, Map<String, Object> roleMap)
+    private boolean roleExists(RoleType roleType, String roleName)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         AuthorizationStrategy a = jenkinsRule.jenkins.getAuthorizationStrategy();
         FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
         boolean found = false;
         // Using reflection to get method
-        String getRoleMethodString = "get" + StringUtils.capitalize(roleType.name().toLowerCase()  + "Roles");
-        Method getRoleMethod = strategy.getClass().getMethod(getRoleMethodString);
-        Set<AbstractRole> roleSet = (Set) getRoleMethod.invoke(strategy);
-        for (AbstractRole role : roleSet) {
-            if (role.getName().equals(roleMap.get("name"))) {
+        Set<? extends AbstractRole> roles;
+        switch(roleType) {
+            case AGENT:
+                roles = strategy.getAgentRoles();
+                break;
+            case FOLDER:
+                roles = strategy.getFolderRoles();
+                break;
+            case GLOBAL:
+                roles = strategy.getGlobalRoles();
+                break;
+            default:
+                throw new IllegalArgumentException("Expected role type of AGENT, FOLDER or GLOBAL but received: " + roleType);
+        }
+        for (AbstractRole role : roles) {
+            if (role.getName().equals(roleName)) {
                 found = true;
                 break;
             }
         }
-        assertTrue(found);
+        return found;
     }
 
     /**
