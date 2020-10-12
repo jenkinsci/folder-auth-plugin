@@ -38,6 +38,7 @@ public class FolderAuthorizationWebAPITest {
     @Rule
     public final JenkinsRule jenkinsRule = new JenkinsRule();
     private JenkinsRule.WebClient webClient;
+    String apiURL;
 
     @Before
     public void setup() throws Exception {
@@ -48,6 +49,9 @@ public class FolderAuthorizationWebAPITest {
             .newInstance(null, new JSONObject(true));
         jenkinsRule.jenkins.setAuthorizationStrategy(strategy);
 
+        FolderAuthorizationStrategyManagementLink folderAuthorizationStrategyManagementLink = FolderAuthorizationStrategyManagementLink.all()
+            .getInstance(FolderAuthorizationStrategyManagementLink.class);
+        apiURL = jenkinsRule.jenkins.getRootUrl() + folderAuthorizationStrategyManagementLink.getUrlName();
         User.getById("adminUser", true);
         FolderAuthorizationStrategyAPI.assignSidToGlobalRole("adminUser", "admin");
         webClient = jenkinsRule.createWebClient();
@@ -59,6 +63,8 @@ public class FolderAuthorizationWebAPITest {
     @Test
     public void testAddGlobalRole()
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+        assertFalse(roleExists(RoleType.AGENT, "globalRole"));
         Map<String, Object> map = new HashMap<>();
         map.put("name", "globalRole");
         map.put("permissions", Arrays.asList(Item.CONFIGURE.getId(), Item.BUILD.getId()));
@@ -72,6 +78,8 @@ public class FolderAuthorizationWebAPITest {
     @Test
     public void testAddFolderRole()
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+        assertFalse(roleExists(RoleType.FOLDER, "folderRole"));
         Map<String, Object> map = new HashMap<>();
         map.put("name", "folderRole");
         map.put("permissions", Arrays.asList(Item.CONFIGURE.getId(), Item.BUILD.getId()));
@@ -85,6 +93,8 @@ public class FolderAuthorizationWebAPITest {
 
     @Test
     public void testAddAgentRole() throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+        assertFalse(roleExists(RoleType.AGENT, "agentRole"));
         Map<String, Object> map = new HashMap<>();
         map.put("name", "agentRole");
         map.put("permissions", Arrays.asList(Computer.CONFIGURE.getId(), Computer.CREATE.getId()));
@@ -101,8 +111,9 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddGlobalRole();  // adds a global role named globalRole
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/assignSidToGlobalRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        assertFalse(userAssignedToRole(RoleType.GLOBAL, "alice", "globalRole"));
+        URL methodURL = new URL(apiURL + "/assignSidToGlobalRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
             new NameValuePair("roleName", "globalRole"),
@@ -119,8 +130,9 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddFolderRole();  // adds a folder role named folderRole
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/assignSidToFolderRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        assertFalse(userAssignedToRole(RoleType.FOLDER, "alice", "folderRole"));
+        URL methodURL = new URL(apiURL + "/assignSidToFolderRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
             new NameValuePair("roleName", "folderRole"),
@@ -137,8 +149,9 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddAgentRole();  // adds a agent role named agentRole
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/assignSidToAgentRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        assertFalse(userAssignedToRole(RoleType.AGENT, "alice", "agentRole"));
+        URL methodURL = new URL(apiURL + "/assignSidToAgentRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "agentRole"),
@@ -155,8 +168,8 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddGlobalRole();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteGlobalRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        URL methodURL = new URL(apiURL + "folder-auth/deleteGlobalRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "globalRole")
@@ -172,8 +185,8 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddFolderRole();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteFolderRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        URL methodURL = new URL(apiURL + "folder-auth/deleteFolderRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "folderRole")
@@ -188,8 +201,8 @@ public class FolderAuthorizationWebAPITest {
     public void testDeleteAgentRole() throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddAgentRole();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteAgentRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        URL methodURL = new URL(apiURL + "folder-auth/deleteAgentRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "agentRole")
@@ -211,22 +224,12 @@ public class FolderAuthorizationWebAPITest {
      * @throws IOException
      */
     private void addRole(RoleType roleType, String jsonString) throws IOException {
-        String apiPath;
-        switch (roleType) {
-            case GLOBAL:
-                apiPath = "folder-auth/addGlobalRole";
-                break;
-            case FOLDER:
-                apiPath = "folder-auth/addFolderRole";
-                break;
-            case AGENT:
-                apiPath = "folder-auth/addAgentRole";
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected role type");
-        }
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + apiPath);
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+
+        FolderAuthorizationStrategyManagementLink folderAuthorizationStrategyManagementLink = FolderAuthorizationStrategyManagementLink.all()
+                .getInstance(FolderAuthorizationStrategyManagementLink.class);
+        String apiURL = folderAuthorizationStrategyManagementLink.getUrlName();
+        URL methodURL = new URL(apiURL + "/add" + StringUtils.capitalize(roleType.name().toLowerCase()) + "Role");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
         request.setRequestBody(jsonString);
         request.setAdditionalHeader("Content-Type", "application/json");
         Page page = webClient.getPage(request);
@@ -304,6 +307,6 @@ public class FolderAuthorizationWebAPITest {
                 break;
             }
         }
-        assertTrue(assigned);
+        return assigned;
     }
 }
