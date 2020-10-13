@@ -9,9 +9,6 @@ import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.AuthorizationStrategy;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
-import io.jenkins.plugins.folderauth.roles.AgentRole;
-import io.jenkins.plugins.folderauth.roles.FolderRole;
-import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -168,7 +165,7 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddGlobalRole();
 
-        URL methodURL = new URL(apiURL + "folder-auth/deleteGlobalRole");
+        URL methodURL = new URL(apiURL + "/deleteGlobalRole");
         WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
@@ -185,7 +182,7 @@ public class FolderAuthorizationWebAPITest {
             throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddFolderRole();
 
-        URL methodURL = new URL(apiURL + "folder-auth/deleteFolderRole");
+        URL methodURL = new URL(apiURL + "/deleteFolderRole");
         WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
@@ -201,7 +198,7 @@ public class FolderAuthorizationWebAPITest {
     public void testDeleteAgentRole() throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         testAddAgentRole();
 
-        URL methodURL = new URL(apiURL + "folder-auth/deleteAgentRole");
+        URL methodURL = new URL(apiURL + "/deleteAgentRole");
         WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
@@ -225,9 +222,6 @@ public class FolderAuthorizationWebAPITest {
      */
     private void addRole(RoleType roleType, String jsonString) throws IOException {
 
-        FolderAuthorizationStrategyManagementLink folderAuthorizationStrategyManagementLink = FolderAuthorizationStrategyManagementLink.all()
-                .getInstance(FolderAuthorizationStrategyManagementLink.class);
-        String apiURL = folderAuthorizationStrategyManagementLink.getUrlName();
         URL methodURL = new URL(apiURL + "/add" + StringUtils.capitalize(roleType.name().toLowerCase()) + "Role");
         WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
         request.setRequestBody(jsonString);
