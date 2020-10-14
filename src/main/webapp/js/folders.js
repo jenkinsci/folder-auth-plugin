@@ -26,7 +26,8 @@ const renderFoldersAsOptions = (folders) => {
     const loadingLabel = document.getElementById('loading-folders');
 
     if (!(Array.isArray(folders) && folders.length)) {
-        loadingLabel.innerText = 'Please create a folder before adding a folder role.';
+        loadingLabel.innerHTML = '<strong>Please create a folder before adding a folder role.</strong>';
+
         return;
     }
 
