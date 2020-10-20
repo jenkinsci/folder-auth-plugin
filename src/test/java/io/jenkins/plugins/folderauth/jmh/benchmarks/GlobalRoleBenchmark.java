@@ -8,6 +8,8 @@ import io.jenkins.plugins.folderauth.acls.GlobalAclImpl;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.benchmark.jmh.JmhBenchmark;
 import jenkins.benchmark.jmh.JmhBenchmarkState;
+
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -64,39 +66,31 @@ public class GlobalRoleBenchmark {
         }
     }
 
-    @State(Scope.Thread)
-    public static class ThreadState {
-        @Setup(Level.Iteration)
-        public void setup() {
-            SecurityContext holder = SecurityContextHolder.getContext();
-            holder.setAuthentication(Objects.requireNonNull(User.getById("user3", true)).impersonate());
-        }
+    @Benchmark
+    public void benchmark050(GlobalRoles050 state, Blackhole blackhole) {
+        blackhole.consume(state.acl.hasPermission(state.auth, Item.CREATE));
     }
 
     @Benchmark
-    public void benchmark050(GlobalRoles050 state, ThreadState threadState, Blackhole blackhole) {
-        assertFalse(state.acl.hasPermission(Item.CREATE));
+    public void benchmark100(GlobalRoles100 state, Blackhole blackhole) {
+        blackhole.consume(state.acl.hasPermission(state.auth, Item.CREATE));
     }
 
     @Benchmark
-    public void benchmark100(GlobalRoles100 state, ThreadState threadState, Blackhole blackhole) {
-        blackhole.consume(state.acl.hasPermission(Item.CREATE));
+    public void benchmark200(GlobalRoles200 state, Blackhole blackhole) {
+        blackhole.consume(state.acl.hasPermission(state.auth, Item.CREATE));
     }
 
     @Benchmark
-    public void benchmark200(GlobalRoles200 state, ThreadState threadState, Blackhole blackhole) {
-        blackhole.consume(state.acl.hasPermission(Item.CREATE));
-    }
-
-    @Benchmark
-    public void benchmark500(GlobalRoles500 state, ThreadState threadState, Blackhole blackhole) {
-        blackhole.consume(state.acl.hasPermission(Item.CREATE));
+    public void benchmark500(GlobalRoles500 state, Blackhole blackhole) {
+        blackhole.consume(state.acl.hasPermission(state.auth, Item.CREATE));
     }
 }
 
 abstract class GlobalRoleBenchmarkState extends JmhBenchmarkState {
 
     GlobalAclImpl acl;
+    Authentication auth;
 
     @Override
     public void setup() {
@@ -112,6 +106,7 @@ abstract class GlobalRoleBenchmarkState extends JmhBenchmarkState {
         acl = strategy.getRootACL();
         assertFalse(acl.hasPermission(Objects.requireNonNull(User.getById("user3", true)).impersonate(),
             Item.CREATE));
+        auth = Objects.requireNonNull(User.getById("user3", true)).impersonate();
     }
 
     abstract int getRoleCount();
