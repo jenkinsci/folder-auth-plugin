@@ -1,8 +1,13 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import hudson.model.User;
+import hudson.security.SecurityRealm;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
+import jenkins.model.Jenkins;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.dao.DataAccessException;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -113,7 +118,21 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
     @Nonnull
     @SuppressWarnings("unused") // used by index.jelly
     public String getSidsCommaSeparated() {
-        String string = new TreeSet<>(sids).toString();
-        return string.substring(1, string.length() - 1);
+        Jenkins jenkinsInstance = Jenkins.get();
+        SecurityRealm sr = jenkinsInstance.getSecurityRealm();
+        StringBuilder sb = new StringBuilder();
+        for (String sid: new TreeSet<>(sids)) {
+            try {
+                sr.loadUserByUsername(sid);
+                User u = User.getById(sid, false);
+                String fullName = u.getFullName();
+                sb.append(sid).append("(").append(fullName).append("), ");
+            } catch (UsernameNotFoundException | DataAccessException | NullPointerException e) {
+                // on any exception just add the sid
+                // this could happen either because SID lookup error or no FullName set
+                sb.append(sid).append(", ");
+            }
+        }
+        return sb.length()==0?"":sb.substring(0,sb.length()-2);
     }
 }
