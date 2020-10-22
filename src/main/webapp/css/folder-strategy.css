@@ -28,7 +28,7 @@ div.role-container {
 .loading {
     padding-top: 7px;
     font-size: 12px;
-    font-weight: lighter;
+    font-weight: bold;
 }
 
 div.role {

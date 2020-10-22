@@ -8,10 +8,9 @@ import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.AuthorizationStrategy;
-import io.jenkins.plugins.folderauth.roles.AgentRole;
-import io.jenkins.plugins.folderauth.roles.FolderRole;
-import io.jenkins.plugins.folderauth.roles.GlobalRole;
+import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +22,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -34,90 +34,61 @@ public class FolderAuthorizationWebAPITest {
     @Rule
     public final JenkinsRule jenkinsRule = new JenkinsRule();
     private JenkinsRule.WebClient webClient;
+    String apiURL;
 
     @Before
     public void setup() throws Exception {
 
         jenkinsRule.jenkins.setSecurityRealm(jenkinsRule.createDummySecurityRealm());
         jenkinsRule.jenkins.setCrumbIssuer(null);
-        // Setting authorization strategy
         FolderBasedAuthorizationStrategy strategy = new FolderBasedAuthorizationStrategy.DescriptorImpl()
-            .newInstance(null, new JSONObject(true));
+                .newInstance(null, new JSONObject(true));
         jenkinsRule.jenkins.setAuthorizationStrategy(strategy);
 
-        // Adding an admin user
+        FolderAuthorizationStrategyManagementLink folderAuthorizationStrategyManagementLink = FolderAuthorizationStrategyManagementLink.all()
+                .getInstance(FolderAuthorizationStrategyManagementLink.class);
+        apiURL = jenkinsRule.jenkins.getRootUrl() + folderAuthorizationStrategyManagementLink.getUrlName();
         User.getById("adminUser", true);
-        // Assigning web client to admin
         FolderAuthorizationStrategyAPI.assignSidToGlobalRole("adminUser", "admin");
         webClient = jenkinsRule.createWebClient();
         webClient.login("adminUser", "adminUser");
+        // not ideal, but HTMLUnit web client doesn't accept template literals amongst others
         webClient.getOptions().setThrowExceptionOnScriptError(false);
     }
 
     @Test
-    public void nullTest() {
-        assertTrue(true);
-    }
-
-    @Test
     public void testAddGlobalRole() throws IOException {
-        Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("name", "globalRole");
-        jsonMap.put("permissions", Arrays.asList(Item.CONFIGURE.getId(), Item.BUILD.getId()));
-        JSONObject json = JSONObject.fromObject(jsonMap);
+
+        assertFalse(roleExists(RoleType.AGENT, "globalRole"));
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "globalRole");
+        map.put("permissions", Arrays.asList(Item.CONFIGURE.getId(), Item.BUILD.getId()));
+        JSONObject json = JSONObject.fromObject(map);
         String jsonString = json.toString();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/addGlobalRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
-        request.setRequestBody(jsonString);
-        request.setAdditionalHeader("Content-Type", "application/json");
-        Page page = webClient.getPage(request);
-        assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-
-        // Verifying that the global role exists
-        AuthorizationStrategy a = jenkinsRule.jenkins.getAuthorizationStrategy();
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
-        boolean found = false;
-        for (GlobalRole globalRole : strategy.getGlobalRoles()) {
-            if (globalRole.getName().equals("globalRole")) {
-                found = true;
-                break;
-            }
-        }
-        assertTrue(found);
+        addRole(RoleType.GLOBAL, jsonString);
+        assertTrue(roleExists(RoleType.GLOBAL, "globalRole"));
     }
 
     @Test
     public void testAddFolderRole() throws IOException {
-        Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("name", "folderRole");
-        jsonMap.put("permissions", Arrays.asList(Item.CONFIGURE.getId(), Item.BUILD.getId()));
-        jsonMap.put("folderNames", Arrays.asList("folder1", "folder2"));
-        JSONObject json = JSONObject.fromObject(jsonMap);
+
+        assertFalse(roleExists(RoleType.FOLDER, "folderRole"));
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "folderRole");
+        map.put("permissions", Arrays.asList(Item.CONFIGURE.getId(), Item.BUILD.getId()));
+        map.put("folderNames", Arrays.asList("folder1", "folder2"));
+        JSONObject json = JSONObject.fromObject(map);
         String jsonString = json.toString();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/addFolderRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
-        request.setRequestBody(jsonString);
-        request.setAdditionalHeader("Content-Type", "application/json");
-        Page page = webClient.getPage(request);
-        assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-
-        // Verifying that the global role exists
-        AuthorizationStrategy a = jenkinsRule.jenkins.getAuthorizationStrategy();
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
-        boolean found = false;
-        for (FolderRole folderRole : strategy.getFolderRoles()) {
-            if (folderRole.getName().equals("folderRole")) {
-                found = true;
-                break;
-            }
-        }
-        assertTrue(found);
+        addRole(RoleType.FOLDER, jsonString);
+        assertTrue(roleExists(RoleType.FOLDER, "folderRole"));
     }
 
     @Test
     public void testAddAgentRole() throws IOException {
+
+        assertFalse(roleExists(RoleType.AGENT, "agentRole"));
         Map<String, Object> map = new HashMap<>();
         map.put("name", "agentRole");
         map.put("permissions", Arrays.asList(Computer.CONFIGURE.getId(), Computer.CREATE.getId()));
@@ -125,89 +96,54 @@ public class FolderAuthorizationWebAPITest {
         JSONObject json = JSONObject.fromObject(map);
         String jsonString = json.toString();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/addAgentRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
-        request.setRequestBody(jsonString);
-        request.setAdditionalHeader("Content-Type", "application/json");
-        Page page = webClient.getPage(request);
-        assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-
-        // Verifying that the global role exists
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        boolean found = false;
-        for (AgentRole agentRole : strategy.getAgentRoles()) {
-            if (agentRole.getName().equals("agentRole")) {
-                found = true;
-                break;
-            }
-        }
-        assertTrue(found);
+        addRole(RoleType.AGENT, jsonString);
+        assertTrue(roleExists(RoleType.AGENT, "agentRole"));
     }
 
     @Test
     public void testAssignSidToGlobalRole() throws IOException {
-        testAddGlobalRole();  // adds a global role named global
+        testAddGlobalRole();  // adds a global role named globalRole
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/assignSidToGlobalRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
-//        request.setRequestBody("roleName=globalRole&sid=alice");
+        assertFalse(userAssignedToRole(RoleType.GLOBAL, "alice", "globalRole"));
+        URL methodURL = new URL(apiURL + "/assignSidToGlobalRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
-        // Setting parameters
         request.setRequestParameters(Arrays.asList(
-            new NameValuePair("roleName", "globalRole"),
-            new NameValuePair("sid", "alice")
+                new NameValuePair("roleName", "globalRole"),
+                new NameValuePair("sid", "alice")
         ));
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        // Verifying that alice has been assigned
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins
-                .getAuthorizationStrategy();
-        boolean assigned = false;
-        for (GlobalRole globalRole : strategy.getGlobalRoles()) {
-            if (globalRole.getName().equals("globalRole")) {
-                assigned = globalRole.getSids().contains("alice");
-                break;
-            }
-        }
-        assertTrue(assigned);
+        assertTrue(userAssignedToRole(RoleType.GLOBAL, "alice", "globalRole"));
     }
 
     @Test
     public void testAssignSidToFolderRole() throws IOException {
-        testAddFolderRole();  // adds a global role named global
+        testAddFolderRole();  // adds a folder role named folderRole
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/assignSidToFolderRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        assertFalse(userAssignedToRole(RoleType.FOLDER, "alice", "folderRole"));
+        URL methodURL = new URL(apiURL + "/assignSidToFolderRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
-        // Setting parameters
         request.setRequestParameters(Arrays.asList(
-            new NameValuePair("roleName", "folderRole"),
-            new NameValuePair("sid", "alice")
+                new NameValuePair("roleName", "folderRole"),
+                new NameValuePair("sid", "alice")
         ));
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        // Verifying that alice has been assigned
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        boolean assigned = false;
-        for (FolderRole folderRole : strategy.getFolderRoles()) {
-            if (folderRole.getName().equals("folderRole")) {
-                assigned = folderRole.getSids().contains("alice");
-                break;
-            }
-        }
-        assertTrue(assigned);
+        assertTrue(userAssignedToRole(RoleType.FOLDER, "alice", "folderRole"));
     }
 
     @Test
     public void testAssignSidToAgentRole() throws IOException {
-        testAddAgentRole();  // adds a global role named global
+        testAddAgentRole();  // adds a agent role named agentRole
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/assignSidToAgentRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        assertFalse(userAssignedToRole(RoleType.AGENT, "alice", "agentRole"));
+        URL methodURL = new URL(apiURL + "/assignSidToAgentRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
-        // Setting parameters
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "agentRole"),
                 new NameValuePair("sid", "alice")
@@ -215,78 +151,146 @@ public class FolderAuthorizationWebAPITest {
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        // Verifying that alice has been assigned
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        boolean assigned = false;
-        for (AgentRole agentRole : strategy.getAgentRoles()) {
-            if (agentRole.getName().equals("agentRole")) {
-                assigned = agentRole.getSids().contains("alice");
-                break;
-            }
-        }
-        assertTrue(assigned);
+        assertTrue(userAssignedToRole(RoleType.AGENT, "alice", "agentRole"));
     }
 
     @Test
     public void testDeleteGlobalRole() throws IOException {
         testAddGlobalRole();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteGlobalRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        URL methodURL = new URL(apiURL + "/deleteGlobalRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
-        // Setting parameters
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "globalRole")
         ));
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        // Verifying that role is actually deleted
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        for (GlobalRole globalRole : strategy.getGlobalRoles()) {
-            assertNotEquals("globalRole", globalRole.getName());
-        }
+        assertFalse(roleExists(RoleType.GLOBAL, "globalRole"));
     }
 
     @Test
     public void testDeleteFolderRole() throws IOException {
         testAddFolderRole();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteFolderRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        URL methodURL = new URL(apiURL + "/deleteFolderRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
-        // Setting parameters
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "folderRole")
         ));
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        // Verifying that role is actually deleted
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        for (FolderRole folderRole : strategy.getFolderRoles()) {
-            assertNotEquals("globalRole", folderRole.getName());
-        }
+        assertFalse(roleExists(RoleType.FOLDER, "folderRole"));
     }
 
     @Test
     public void testDeleteAgentRole() throws IOException {
         testAddAgentRole();
 
-        URL apiURL = new URL(jenkinsRule.jenkins.getRootUrl() + "folder-auth/deleteAgentRole");
-        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        URL methodURL = new URL(apiURL + "/deleteAgentRole");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
 
-        // Setting parameters
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("roleName", "agentRole")
         ));
         Page page = webClient.getPage(request);
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
-        // Verifying that role is actually deleted
-        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
-        for (AgentRole agentRole : strategy.getAgentRoles()) {
-            assertNotEquals("globalRole", agentRole.getName());
+        assertFalse(roleExists(RoleType.AGENT, "agentRole"));
+    }
+
+    private enum RoleType {
+        GLOBAL, FOLDER, AGENT
+    }
+
+    /**
+     * Util method to add a role and verify that the request succeeded
+     *
+     * @param roleType   Type of role (either GLOBAL, FOLDER or AGENT
+     * @param jsonString String containing the json representation of a role
+     * @throws IOException
+     */
+    private void addRole(RoleType roleType, String jsonString) throws IOException {
+
+        URL methodURL = new URL(apiURL + "/add" + StringUtils.capitalize(roleType.name().toLowerCase()) + "Role");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.POST);
+        request.setRequestBody(jsonString);
+        request.setAdditionalHeader("Content-Type", "application/json");
+        Page page = webClient.getPage(request);
+        assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+    }
+
+    /**
+     * Util method to verify that the role exists
+     *
+     * @param roleType Type of role
+     * @param roleName Map object that represents the role
+     * @return true if role exists
+     */
+    private boolean roleExists(RoleType roleType, String roleName) {
+
+        AuthorizationStrategy a = jenkinsRule.jenkins.getAuthorizationStrategy();
+        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) a;
+        boolean found = false;
+        Set<? extends AbstractRole> roles;
+        switch (roleType) {
+            case AGENT:
+                roles = strategy.getAgentRoles();
+                break;
+            case FOLDER:
+                roles = strategy.getFolderRoles();
+                break;
+            case GLOBAL:
+                roles = strategy.getGlobalRoles();
+                break;
+            default:
+                throw new IllegalArgumentException("Expected role type of AGENT, FOLDER or GLOBAL but received: " + roleType);
         }
+        for (AbstractRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Util method to verify that a user has been assigned to a particular role
+     *
+     * @param roleType Type of role
+     * @param sid      User ID
+     * @param roleName Name of the role
+     * @return true if user is assigned to role
+     */
+    private boolean userAssignedToRole(RoleType roleType, String sid, String roleName) {
+
+        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) jenkinsRule.jenkins.getAuthorizationStrategy();
+        boolean assigned = false;
+        Set<? extends AbstractRole> roles;
+        switch (roleType) {
+            case GLOBAL:
+                roles = strategy.getGlobalRoles();
+                break;
+            case FOLDER:
+                roles = strategy.getFolderRoles();
+                break;
+            case AGENT:
+                roles = strategy.getAgentRoles();
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected role. Expecting GLOBAL, FOLDER or AGENT");
+        }
+
+        for (AbstractRole role : roles) {
+            if (role.getName().equals(roleName)) {
+                assigned = role.getSids().contains(sid);
+                break;
+            }
+        }
+        return assigned;
     }
 }
