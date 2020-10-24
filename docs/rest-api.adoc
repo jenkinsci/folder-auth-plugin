@@ -178,6 +178,78 @@ Deletes an agent role identified by its name. Requires POST to
 curl -X POST -d 'roleName=foo' http://localhost:8080/folder-auth/deleteAgentRole
 ----
 
+== API Methods for getting information regarding a role
+
+=== `getAgentRole`
+Gets information of an agent role. Requires the parameter `name`. +
+Note: The json output below is pretty-printed just for clarity.
+[source,bash]
+----
+curl -X GET https://localhost:8080/folder-auth/getAgentRole?name=matrix
+
+{
+  "name": "matrix",
+  "sids": [
+    "alice",
+    "bob"
+  ],
+  "agents": [
+    "smith",
+    "jackson",
+    "johnson",
+    "thompson"
+  ],
+  "permissions": [
+    "hudson.model.Computer.Configure",
+    "hudson.model.Computer.Create"
+  ]
+}
+
+----
+
+=== `getFolderRole`
+Gets information of a folder role. Requires the parameter `name`.
+[source,bash]
+----
+curl -X GET https://localhost:8080/folder-auth/getFolderRole?name=folderReadOnly
+
+{
+  "name": "folderReadOnly",
+  "sids": [
+    "alice",
+    "bob"
+  ],
+  "folders": [
+    "folder1",
+    "folder2
+  ],
+  "permissions": [
+    "hudson.model.Item.Discover",
+    "hudson.model.Item.Read"
+  ]
+}
+----
+
+=== `getGlobalRole`
+Gets information of a global role. Requires the parameter `name`.
+[source,bash]
+----
+curl -X GET https://localhost:8080/folder-auth/getFolderRole?name=admin
+
+{
+  "name": "admin",
+  "sids": [
+    "bob"
+  ],
+  "permissions": [
+    "hudson.model.Hudson.Administer",
+    "hudson.model.Item.Read",
+    "hudson.model.View.Configure",
+    "hudson.model.View.Delete",
+    "hudson.model.Computer.Delete"
+  ]
+}
+----
 == Logging in to Jenkins
 
 When using cURL to invoke the API, you need to login as a user with the
