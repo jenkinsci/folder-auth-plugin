@@ -314,10 +314,10 @@ public class FolderAuthorizationWebAPITest {
         JSONArray agentRoles = (JSONArray) json.get("agentRoles");
         assertTrue(agentRoles.contains("agentRole"));
         assertTrue(json.containsKey("folderRoles"));
-        JSONArray folderRoles = (JSONArray) json.get("agentRoles");
+        JSONArray folderRoles = (JSONArray) json.get("folderRoles");
         assertTrue(folderRoles.contains("folderRole"));
         assertTrue(json.containsKey("globalRoles"));
-        JSONArray globalRoles = (JSONArray) json.get("agentRoles");
+        JSONArray globalRoles = (JSONArray) json.get("globalRoles");
         assertTrue(globalRoles.contains("agentRole"));
 
         // Testing doing a get for a user who is not assigned to any role
@@ -332,10 +332,10 @@ public class FolderAuthorizationWebAPITest {
         assertEquals(0, agentRoles.size());
         assertTrue(agentRoles.contains("agentRole"));
         assertTrue(json.containsKey("folderRoles"));
-        folderRoles = (JSONArray) json.get("agentRoles");
+        folderRoles = (JSONArray) json.get("folderRoles");
         assertEquals(0, folderRoles.size());
         assertTrue(json.containsKey("globalRoles"));
-        globalRoles = (JSONArray) json.get("agentRoles");
+        globalRoles = (JSONArray) json.get("globalRoles");
         assertEquals(0, globalRoles.size());
     }
 
