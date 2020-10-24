@@ -9,6 +9,7 @@ import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.AuthorizationStrategy;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -21,8 +22,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -35,6 +39,7 @@ public class FolderAuthorizationWebAPITest {
     public final JenkinsRule jenkinsRule = new JenkinsRule();
     private JenkinsRule.WebClient webClient;
     String apiURL;
+    private final Logger LOGGER = Logger.getLogger(FolderAuthorizationWebAPITest.class.getName());
 
     @Before
     public void setup() throws Exception {
@@ -200,6 +205,138 @@ public class FolderAuthorizationWebAPITest {
         assertEquals("Verifying that request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
 
         assertFalse(roleExists(RoleType.AGENT, "agentRole"));
+    }
+
+    @Test
+    public void testGetAgentRole() throws IOException {
+        testAssignSidToAgentRole();
+
+        String roleName = "agentRole";
+        URL methodURL = new URL(apiURL + "/getAgentRole?name=" + roleName);
+        WebRequest request = new WebRequest(methodURL, HttpMethod.GET);
+
+        Page page = webClient.getPage(request);
+        // Verifying that web request is successful and that the role is found
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+
+        // Verifying that role contents are correct
+        String roleString = page.getWebResponse().getContentAsString();
+        LOGGER.info(roleString);
+        JSONObject json = JSONObject.fromObject(roleString);
+        assertEquals("Verifying that the name is correct", roleName, json.get("name"));
+        assertTrue(json.containsKey("sids"));
+        JSONArray sids = (JSONArray) json.get("sids");
+        assertTrue("User alice should be assigned to role", sids.contains("alice"));
+        assertEquals("Verifying that role is extracted correctly",
+                new HashSet(Arrays.asList("agent1", "agent2")),
+                new HashSet((List) json.get("agents")));
+
+        // Testing getting a role that doesn't exists
+        methodURL = new URL(apiURL + "/getAgentRole?name=nonexistent");
+        request = new WebRequest(methodURL, HttpMethod.GET);
+        page = webClient.getPage(request);
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        roleString = page.getWebResponse().getContentAsString();
+        assertEquals("{}", roleString);  // expecting an empty response as the role doesn't exists.
+    }
+
+    @Test
+    public void testGetFolderRole() throws IOException {
+        testAssignSidToFolderRole();  // creates a folder role named "folderRole" and assigns "alice" to the role
+
+        String roleName = "folderRole";
+        URL methodURL = new URL(apiURL + "/getFolderRole?name=" + roleName);
+        WebRequest request = new WebRequest(methodURL, HttpMethod.GET);
+
+        Page page = webClient.getPage(request);
+        // Verifying that web request is successful and that the role is found
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        String roleString = page.getWebResponse().getContentAsString();
+        JSONObject json = JSONObject.fromObject(roleString);
+        assertEquals(roleName, json.get("name"));
+        JSONArray sids = (JSONArray) json.get("sids");
+        assertTrue("User alice should be assigned to role", sids.contains("alice"));
+        assertEquals("Verifying that role is extracted correctly",
+                new HashSet(Arrays.asList("folder1", "folder2")),
+                new HashSet((List) json.get("folders")));
+
+        // Testing getting a role that doesn't exists
+        methodURL = new URL(apiURL + "/getFolderRole?name=nonexistent");
+        request = new WebRequest(methodURL, HttpMethod.GET);
+        page = webClient.getPage(request);
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        roleString = page.getWebResponse().getContentAsString();
+        assertEquals("{}", roleString);  // expecting an empty response as the role doesn't exists.
+    }
+
+    @Test
+    public void testGetGlobalRole() throws IOException {
+        testAssignSidToGlobalRole();  // creates a folder role named "folderRole" and assigns "alice" to the role
+
+        String roleName = "globalRole";
+        URL methodURL = new URL(apiURL + "/getGlobalRole?name=" + roleName);
+        WebRequest request = new WebRequest(methodURL, HttpMethod.GET);
+
+        Page page = webClient.getPage(request);
+        // Verifying that web request is successful and that the role is found
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        String roleString = page.getWebResponse().getContentAsString();
+        JSONObject json = JSONObject.fromObject(roleString);
+        assertEquals(roleName, json.get("name"));
+        JSONArray sids = (JSONArray) json.get("sids");
+        assertTrue("User alice should be assigned to role", sids.contains("alice"));
+
+        // Testing getting a role that doesn't exists
+        methodURL = new URL(apiURL + "/getGlobalRole?name=nonexistent");
+        request = new WebRequest(methodURL, HttpMethod.GET);
+        page = webClient.getPage(request);
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        roleString = page.getWebResponse().getContentAsString();
+        assertEquals("{}", roleString);  // expecting an empty response as the role doesn't exists.
+    }
+
+    @Test
+    public void testGetAssignedRoles() throws IOException {
+        testAssignSidToAgentRole();
+        testAssignSidToFolderRole();
+        testAssignSidToGlobalRole();
+        // above creates 3 roles and assigns "alice" to all 3
+
+        URL methodURL = new URL(apiURL + "/getAssignedRoles?sid=alice");
+        WebRequest request = new WebRequest(methodURL, HttpMethod.GET);
+        Page page = webClient.getPage(request);
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+
+        // Verifying that the method returns all 3 roles
+        String response = page.getWebResponse().getContentAsString();
+        JSONObject json = JSONObject.fromObject(response);
+        assertTrue(json.containsKey("agentRoles"));
+        JSONArray agentRoles = (JSONArray) json.get("agentRoles");
+        assertTrue(agentRoles.contains("agentRole"));
+        assertTrue(json.containsKey("folderRoles"));
+        JSONArray folderRoles = (JSONArray) json.get("agentRoles");
+        assertTrue(folderRoles.contains("folderRole"));
+        assertTrue(json.containsKey("globalRoles"));
+        JSONArray globalRoles = (JSONArray) json.get("agentRoles");
+        assertTrue(globalRoles.contains("agentRole"));
+
+        // Testing doing a get for a user who is not assigned to any role
+        methodURL = new URL(apiURL + "/getAssignedRoles?sid=unknown");
+        request = new WebRequest(methodURL, HttpMethod.GET);
+        page = webClient.getPage(request);
+        assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        response = page.getWebResponse().getContentAsString();
+        json = JSONObject.fromObject(json);
+        assertTrue(json.containsKey("agentRoles"));
+        agentRoles = (JSONArray) json.get("agentRoles");
+        assertEquals(0, agentRoles.size());
+        assertTrue(agentRoles.contains("agentRole"));
+        assertTrue(json.containsKey("folderRoles"));
+        folderRoles = (JSONArray) json.get("agentRoles");
+        assertEquals(0, folderRoles.size());
+        assertTrue(json.containsKey("globalRoles"));
+        globalRoles = (JSONArray) json.get("agentRoles");
+        assertEquals(0, globalRoles.size());
     }
 
     private enum RoleType {
