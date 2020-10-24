@@ -20,11 +20,13 @@ import io.jenkins.plugins.folderauth.misc.AgentRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.FolderRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.GlobalRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
+import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -37,11 +39,15 @@ import org.kohsuke.stapler.verb.GET;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.management.relation.Role;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -442,5 +448,72 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, roleName);
         redirect();
+    }
+
+    /**
+     * API Method to get an {@link AgentRole}
+     * Example:
+     * {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getAgentRole?name=role1}
+     *
+     * @param name name of the role (single, no list)
+     */
+    @Restricted(NoExternalUse.class)
+    public void doGetAgentRole(@QueryParameter(required = true) String name) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        JSONObject responseJson = new JSONObject();
+        AgentRole role = FolderAuthorizationStrategyAPI.getAgentRole(name);
+        if(role != null) {
+            responseJson.put("name", role.getName());
+            responseJson.put("agents", role.getAgents());
+            responseJson.put("sids", role.getSids());
+            responseJson.put("permissions", getPermissionsFromRole(role));
+        }
+        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
+        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
+            responseJson.write(writer);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void doGetFolderRole(@QueryParameter(required = true) String name) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        JSONObject responseJson = new JSONObject();
+        FolderRole role = FolderAuthorizationStrategyAPI.getFolderRole(name);
+        if(role != null) {
+            responseJson.put("name", role.getName());
+            responseJson.put("folders", role.getFolderNames());
+            responseJson.put("sids", role.getSids());
+            responseJson.put("permissions", getPermissionsFromRole(role));
+        }
+        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
+        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
+            responseJson.write(writer);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void doGetGlobalRole(@QueryParameter(required = true) String name) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        JSONObject responseJson = new JSONObject();
+        GlobalRole role = FolderAuthorizationStrategyAPI.getGlobalRole(name);
+        if (role != null) {
+            responseJson.put("name", role.getName());
+            responseJson.put("sids", role.getSids());
+            responseJson.put("permissions", getPermissionsFromRole(role));
+        }
+        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
+        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
+            responseJson.write(writer);
+        }
+    }
+
+    private Set<String> getPermissionsFromRole(AbstractRole role) {
+
+        SortedSet<PermissionWrapper> permissionWrappers = role.getPermissions();
+        Set<String> permissions = permissionWrappers.stream().map(permissionWrapper -> {
+            Permission permission = permissionWrapper.getPermission();
+            return permission.getId();
+        }).collect(Collectors.toSet());
+        return permissions;
     }
 }
