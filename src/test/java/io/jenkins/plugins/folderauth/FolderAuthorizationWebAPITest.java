@@ -345,7 +345,6 @@ public class FolderAuthorizationWebAPITest {
 
     /**
      * Util method to add a role and verify that the request succeeded
-     *
      * @param roleType   Type of role (either GLOBAL, FOLDER or AGENT
      * @param jsonString String containing the json representation of a role
      * @throws IOException
@@ -362,7 +361,6 @@ public class FolderAuthorizationWebAPITest {
 
     /**
      * Util method to verify that the role exists
-     *
      * @param roleType Type of role
      * @param roleName Map object that represents the role
      * @return true if role exists
@@ -397,7 +395,6 @@ public class FolderAuthorizationWebAPITest {
 
     /**
      * Util method to verify that a user has been assigned to a particular role
-     *
      * @param roleType Type of role
      * @param sid      User ID
      * @param roleName Name of the role

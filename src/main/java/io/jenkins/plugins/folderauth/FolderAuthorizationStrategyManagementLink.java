@@ -449,8 +449,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * API Method to get an {@link AgentRole}
-     * Example:
-     * {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getAgentRole?name=agentSmithRole}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getAgentRole?name=agentSmithRole}
      *
      * @param name name of the role (single, no list)
      */
@@ -459,7 +458,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject responseJson = new JSONObject();
         AgentRole role = FolderAuthorizationStrategyAPI.getAgentRole(name);
-        if(role != null) {
+        if (role != null) {
             responseJson.put("name", role.getName());
             responseJson.put("agents", role.getAgents());
             responseJson.put("sids", role.getSids());
@@ -473,8 +472,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * API Method to get an {@link FolderRole}
-     * Example:
-     * {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getFolderRole?name=folderRole1}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getFolderRole?name=folderRole1}
      *
      * @param name name of the role (single, no list)
      */
@@ -483,7 +481,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject responseJson = new JSONObject();
         FolderRole role = FolderAuthorizationStrategyAPI.getFolderRole(name);
-        if(role != null) {
+        if (role != null) {
             responseJson.put("name", role.getName());
             responseJson.put("folders", role.getFolderNames());
             responseJson.put("sids", role.getSids());
@@ -497,8 +495,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * API Method to get an {@link GlobalRole}
-     * Example:
-     * {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getGlobalRole?name=admin}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getGlobalRole?name=admin}
      *
      * @param name name of the role (single, no list)
      */
@@ -530,6 +527,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * API method to get the names of all roles that a user is assigned to
+     *
      * @param sid User id of the Jenkins user
      * @throws IOException when there is a problem writing the response
      */
@@ -562,6 +560,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * Util method that gets the names of the roles that a user is assigned to
+     *
      * @param roles The set of roles that are available on the Jenkins controller
      * @param sid User id of the Jenkins user
      * @return The names of the roles that the user is assigned to
