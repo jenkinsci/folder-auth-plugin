@@ -39,7 +39,6 @@ public class FolderAuthorizationWebAPITest {
     public final JenkinsRule jenkinsRule = new JenkinsRule();
     private JenkinsRule.WebClient webClient;
     String apiURL;
-    private final Logger LOGGER = Logger.getLogger(FolderAuthorizationWebAPITest.class.getName());
 
     @Before
     public void setup() throws Exception {
@@ -221,7 +220,6 @@ public class FolderAuthorizationWebAPITest {
 
         // Verifying that role contents are correct
         String roleString = page.getWebResponse().getContentAsString();
-        LOGGER.info(roleString);
         JSONObject json = JSONObject.fromObject(roleString);
         assertEquals("Verifying that the name is correct", roleName, json.get("name"));
         assertTrue(json.containsKey("sids"));
@@ -310,15 +308,18 @@ public class FolderAuthorizationWebAPITest {
         // Verifying that the method returns all 3 roles
         String response = page.getWebResponse().getContentAsString();
         JSONObject json = JSONObject.fromObject(response);
+        // Confirming agent role exists
         assertTrue(json.containsKey("agentRoles"));
         JSONArray agentRoles = (JSONArray) json.get("agentRoles");
         assertTrue(agentRoles.contains("agentRole"));
+        // Confirming folder role exists
         assertTrue(json.containsKey("folderRoles"));
         JSONArray folderRoles = (JSONArray) json.get("folderRoles");
         assertTrue(folderRoles.contains("folderRole"));
+        // Confirming global role exists
         assertTrue(json.containsKey("globalRoles"));
         JSONArray globalRoles = (JSONArray) json.get("globalRoles");
-        assertTrue(globalRoles.contains("agentRole"));
+        assertTrue(globalRoles.contains("globalRole"));
 
         // Testing doing a get for a user who is not assigned to any role
         methodURL = new URL(apiURL + "/getAssignedRoles?sid=unknown");
@@ -326,7 +327,7 @@ public class FolderAuthorizationWebAPITest {
         page = webClient.getPage(request);
         assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         response = page.getWebResponse().getContentAsString();
-        json = JSONObject.fromObject(json);
+        json = JSONObject.fromObject(response);
         assertTrue(json.containsKey("agentRoles"));
         agentRoles = (JSONArray) json.get("agentRoles");
         assertEquals(0, agentRoles.size());
