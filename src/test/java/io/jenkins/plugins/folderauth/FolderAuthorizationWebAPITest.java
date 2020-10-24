@@ -330,14 +330,13 @@ public class FolderAuthorizationWebAPITest {
         json = JSONObject.fromObject(response);
         assertTrue(json.containsKey("agentRoles"));
         agentRoles = (JSONArray) json.get("agentRoles");
-        assertEquals(0, agentRoles.size());
-        assertTrue(agentRoles.contains("agentRole"));
+        assertEquals("Expecting no agent roles assigned",0, agentRoles.size());
         assertTrue(json.containsKey("folderRoles"));
         folderRoles = (JSONArray) json.get("folderRoles");
-        assertEquals(0, folderRoles.size());
+        assertEquals("Expecting no folder roles assigned", 0, folderRoles.size());
         assertTrue(json.containsKey("globalRoles"));
         globalRoles = (JSONArray) json.get("globalRoles");
-        assertEquals(0, globalRoles.size());
+        assertEquals("Expecting no global roles assigned", 0, globalRoles.size());
     }
 
     private enum RoleType {
