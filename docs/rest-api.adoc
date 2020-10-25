@@ -1,7 +1,7 @@
 = REST API methods
 :toc:
 
-The plugin provides REST APIs for modifying the roles. All of these methods
+The plugin provides REST APIs for modifying and getting information on the roles. All of these methods
 require the user invoking them to have the `Jenkins.ADMINISTER` permission.
 
 == API methods for adding a role
@@ -181,12 +181,14 @@ curl -X POST -d 'roleName=foo' http://localhost:8080/folder-auth/deleteAgentRole
 == API Methods for getting information regarding a role
 
 === `getAgentRole`
-Gets information of an agent role. Requires the parameter `name`. +
-Note: The json output below is pretty-printed just for clarity.
+Gets information of an agent role. Requires the parameter `name`.
 [source,bash]
 ----
 curl -X GET https://localhost:8080/folder-auth/getAgentRole?name=matrix
-
+----
+returns
+[source, json]
+----
 {
   "name": "matrix",
   "sids": [
@@ -212,7 +214,10 @@ Gets information of a folder role. Requires the parameter `name`.
 [source,bash]
 ----
 curl -X GET https://localhost:8080/folder-auth/getFolderRole?name=folderReadOnly
-
+----
+returns
+[source, json]
+----
 {
   "name": "folderReadOnly",
   "sids": [
@@ -221,7 +226,7 @@ curl -X GET https://localhost:8080/folder-auth/getFolderRole?name=folderReadOnly
   ],
   "folders": [
     "folder1",
-    "folder2
+    "folder2"
   ],
   "permissions": [
     "hudson.model.Item.Discover",
@@ -235,7 +240,10 @@ Gets information of a global role. Requires the parameter `name`.
 [source,bash]
 ----
 curl -X GET https://localhost:8080/folder-auth/getFolderRole?name=admin
-
+----
+returns
+[source, bash]
+----
 {
   "name": "admin",
   "sids": [
