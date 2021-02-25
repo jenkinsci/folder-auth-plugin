@@ -472,7 +472,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * API Method to get an {@link FolderRole}
-     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getFolderRole?name=folderRole1}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getFolderRole?name=folderRole1'}
      *
      * @param name name of the role (single, no list)
      */
@@ -495,7 +495,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
 
     /**
      * API Method to get an {@link GlobalRole}
-     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getGlobalRole?name=admin}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getGlobalRole?name=admin'}
      *
      * @param name name of the role (single, no list)
      */

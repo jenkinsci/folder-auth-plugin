@@ -348,7 +348,7 @@ public class FolderAuthorizationStrategyAPI {
         try {
             strategy = (FolderBasedAuthorizationStrategy) jenkins.getAuthorizationStrategy();
         } catch (ClassCastException error) {
-            throw new IllegalStateException("FolderBasedAuthorizationStrategy is not the" + " current authorization strategy");
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
         }
         Set<? extends AbstractRole> roles;
         switch (roleType) {
