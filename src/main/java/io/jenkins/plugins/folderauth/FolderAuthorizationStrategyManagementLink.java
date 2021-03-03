@@ -452,9 +452,11 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getAgentRole?name=agentSmithRole}
      *
      * @param name name of the role (single, no list)
+     * @return Json object containing info on the role
      */
+    @GET
     @Restricted(NoExternalUse.class)
-    public void doGetAgentRole(@QueryParameter(required = true) String name) throws IOException {
+    public JSONObject doGetAgentRole(@QueryParameter(required = true) String name) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject responseJson = new JSONObject();
         AgentRole role = FolderAuthorizationStrategyAPI.getAgentRole(name);
@@ -464,20 +466,19 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             responseJson.put("sids", role.getSids());
             responseJson.put("permissions", getPermissionsFromRole(role));
         }
-        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
-        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
-            responseJson.write(writer);
-        }
+        return responseJson;
     }
 
     /**
-     * API Method to get an {@link FolderRole}
+     * API Method to get a {@link FolderRole}
      * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getFolderRole?name=folderRole1'}
      *
      * @param name name of the role (single, no list)
+     * @return Json object containing info on the role
      */
+    @GET
     @Restricted(NoExternalUse.class)
-    public void doGetFolderRole(@QueryParameter(required = true) String name) throws IOException {
+    public JSONObject doGetFolderRole(@QueryParameter(required = true) String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject responseJson = new JSONObject();
         FolderRole role = FolderAuthorizationStrategyAPI.getFolderRole(name);
@@ -487,20 +488,19 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             responseJson.put("sids", role.getSids());
             responseJson.put("permissions", getPermissionsFromRole(role));
         }
-        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
-        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
-            responseJson.write(writer);
-        }
+        return responseJson;
     }
 
     /**
-     * API Method to get an {@link GlobalRole}
+     * API Method to get a {@link GlobalRole}
      * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getGlobalRole?name=admin'}
      *
      * @param name name of the role (single, no list)
+     * @return Json object containing info on the role
      */
+    @GET
     @Restricted(NoExternalUse.class)
-    public void doGetGlobalRole(@QueryParameter(required = true) String name) throws IOException {
+    public JSONObject doGetGlobalRole(@QueryParameter(required = true) String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject responseJson = new JSONObject();
         GlobalRole role = FolderAuthorizationStrategyAPI.getGlobalRole(name);
@@ -509,10 +509,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             responseJson.put("sids", role.getSids());
             responseJson.put("permissions", getPermissionsFromRole(role));
         }
-        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
-        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
-            responseJson.write(writer);
-        }
+        return responseJson;
     }
 
     private Set<String> getPermissionsFromRole(AbstractRole role) {
@@ -530,9 +527,11 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      *
      * @param sid User id of the Jenkins user
      * @throws IOException when there is a problem writing the response
+     * @return Json object containing info on all the roles that the user is assigned to
      */
+    @GET
     @Restricted(NoExternalUse.class)
-    public void doGetAssignedRoles(@QueryParameter(required = true) String sid) throws IOException {
+    public JSONObject doGetAssignedRoles(@QueryParameter(required = true) String sid) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // Find out how to get all roles
         AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
@@ -552,10 +551,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         responseJson.put("agentRoles", assignedAgentRoleNames);
         responseJson.put("folderRoles", assignedFolderRoleNames);
         responseJson.put("globalRoles", assignedGlobalRoleNames);
-        Stapler.getCurrentResponse().setContentType("application/json;charset=UTF-8");
-        try (Writer writer = Stapler.getCurrentResponse().getCompressedWriter(Stapler.getCurrentRequest())) {
-            responseJson.write(writer);
-        }
+        return responseJson;
     }
 
     /**
