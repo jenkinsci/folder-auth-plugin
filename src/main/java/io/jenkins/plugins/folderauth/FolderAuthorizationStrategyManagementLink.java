@@ -458,15 +458,17 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public JSONObject doGetAgentRole(@QueryParameter(required = true) String name) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        JSONObject responseJson = new JSONObject();
         AgentRole role = FolderAuthorizationStrategyAPI.getAgentRole(name);
         if (role != null) {
+            JSONObject responseJson = new JSONObject();
             responseJson.put("name", role.getName());
             responseJson.put("agents", role.getAgents());
             responseJson.put("sids", role.getSids());
             responseJson.put("permissions", getPermissionsFromRole(role));
+            return responseJson;
+        } else {
+            return null;  // FIXME - return not found?
         }
-        return responseJson;
     }
 
     /**
@@ -480,15 +482,17 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public JSONObject doGetFolderRole(@QueryParameter(required = true) String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        JSONObject responseJson = new JSONObject();
         FolderRole role = FolderAuthorizationStrategyAPI.getFolderRole(name);
         if (role != null) {
+            JSONObject responseJson = new JSONObject();
             responseJson.put("name", role.getName());
             responseJson.put("folders", role.getFolderNames());
             responseJson.put("sids", role.getSids());
             responseJson.put("permissions", getPermissionsFromRole(role));
+            return responseJson;
+        } else {
+            return null;
         }
-        return responseJson;
     }
 
     /**
@@ -502,14 +506,16 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public JSONObject doGetGlobalRole(@QueryParameter(required = true) String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        JSONObject responseJson = new JSONObject();
         GlobalRole role = FolderAuthorizationStrategyAPI.getGlobalRole(name);
         if (role != null) {
+            JSONObject responseJson = new JSONObject();
             responseJson.put("name", role.getName());
             responseJson.put("sids", role.getSids());
             responseJson.put("permissions", getPermissionsFromRole(role));
+            return responseJson;
+        } else {
+            return null;
         }
-        return responseJson;
     }
 
     private Set<String> getPermissionsFromRole(AbstractRole role) {

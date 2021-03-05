@@ -235,7 +235,7 @@ public class FolderAuthorizationWebAPITest {
         page = webClient.getPage(request);
         assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         roleString = page.getWebResponse().getContentAsString();
-        assertEquals("{}", roleString);  // expecting an empty response as the role doesn't exists.
+        assertEquals("", roleString);  // expecting an empty response as the role doesn't exists.
     }
 
     @Test
@@ -264,7 +264,7 @@ public class FolderAuthorizationWebAPITest {
         page = webClient.getPage(request);
         assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         roleString = page.getWebResponse().getContentAsString();
-        assertEquals("{}", roleString);  // expecting an empty response as the role doesn't exists.
+        assertEquals("", roleString);  // expecting an empty response as the role doesn't exists.
     }
 
     @Test
@@ -290,7 +290,7 @@ public class FolderAuthorizationWebAPITest {
         page = webClient.getPage(request);
         assertEquals("Testing if request is successful", HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         roleString = page.getWebResponse().getContentAsString();
-        assertEquals("{}", roleString);  // expecting an empty response as the role doesn't exists.
+        assertEquals("", roleString);  // expecting an empty response as the role doesn't exists.
     }
 
     @Test
