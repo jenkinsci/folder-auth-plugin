@@ -467,7 +467,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
             responseJson.put("permissions", getPermissionsFromRole(role));
             return responseJson;
         } else {
-            return null;  // FIXME - return not found?
+            return null;
         }
     }
 
