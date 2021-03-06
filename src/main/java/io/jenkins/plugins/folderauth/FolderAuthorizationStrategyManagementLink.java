@@ -456,7 +456,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      */
     @GET
     @Restricted(NoExternalUse.class)
-    public JSONObject doGetAgentRole(@QueryParameter(required = true) String name) throws IOException {
+    public JSONObject doGetAgentRole(@QueryParameter(required = true) String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         AgentRole role = FolderAuthorizationStrategyAPI.getAgentRole(name);
         if (role != null) {
