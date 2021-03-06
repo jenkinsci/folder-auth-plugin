@@ -532,7 +532,6 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      * API method to get the names of all roles that a user is assigned to
      *
      * @param sid User id of the Jenkins user
-     * @throws IOException when there is a problem writing the response
      * @return Json object containing info on all the roles that the user is assigned to
      */
     @GET
