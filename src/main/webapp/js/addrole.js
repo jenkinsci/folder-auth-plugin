@@ -21,7 +21,7 @@ const addGlobalRole = () => {
         return;
     }
 
-    sendPostRequest(`${rootURL}/folder-auth/addGlobalRole`, response);
+    sendPostRequest(rootURL + "/folder-auth/addGlobalRole", response);
 };
 
 // noinspection JSUnusedGlobalSymbols
@@ -51,7 +51,7 @@ const addFolderRole = () => {
         return;
     }
 
-    sendPostRequest(`${rootURL}/folder-auth/addFolderRole`, response);
+    sendPostRequest(rootURL + "/folder-auth/addFolderRole", response);
 };
 
 // noinspection JSUnusedGlobalSymbols
@@ -81,7 +81,7 @@ const addAgentRole = () => {
         return;
     }
 
-    sendPostRequest(`${rootURL}/folder-auth/addAgentRole`, response);
+    sendPostRequest(rootURL + "/folder-auth/addAgentRole", response);
 };
 
 /**

@@ -20,11 +20,13 @@ import io.jenkins.plugins.folderauth.misc.AgentRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.FolderRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.GlobalRoleCreationRequest;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
+import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -39,6 +41,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -442,5 +445,133 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FolderAuthorizationStrategyAPI.removeSidFromAgentRole(sid, roleName);
         redirect();
+    }
+
+    /**
+     * API Method to get an {@link AgentRole}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getAgentRole?name=agentSmithRole}
+     *
+     * @param name name of the role (single, no list)
+     * @return Json object containing info on the role
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public JSONObject doGetAgentRole(@QueryParameter(required = true) String name) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        AgentRole role = FolderAuthorizationStrategyAPI.getAgentRole(name);
+        if (role != null) {
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("name", role.getName());
+            responseJson.put("agents", role.getAgents());
+            responseJson.put("sids", role.getSids());
+            responseJson.put("permissions", getPermissionsFromRole(role));
+            return responseJson;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * API Method to get a {@link FolderRole}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getFolderRole?name=folderRole1'}
+     *
+     * @param name name of the role (single, no list)
+     * @return Json object containing info on the role
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public JSONObject doGetFolderRole(@QueryParameter(required = true) String name) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FolderRole role = FolderAuthorizationStrategyAPI.getFolderRole(name);
+        if (role != null) {
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("name", role.getName());
+            responseJson.put("folders", role.getFolderNames());
+            responseJson.put("sids", role.getSids());
+            responseJson.put("permissions", getPermissionsFromRole(role));
+            return responseJson;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * API Method to get a {@link GlobalRole}
+     * Example: {@code curl -X GET 'http://localhost:8080/jenkins/folder-auth/getGlobalRole?name=admin'}
+     *
+     * @param name name of the role (single, no list)
+     * @return Json object containing info on the role
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public JSONObject doGetGlobalRole(@QueryParameter(required = true) String name) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        GlobalRole role = FolderAuthorizationStrategyAPI.getGlobalRole(name);
+        if (role != null) {
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("name", role.getName());
+            responseJson.put("sids", role.getSids());
+            responseJson.put("permissions", getPermissionsFromRole(role));
+            return responseJson;
+        } else {
+            return null;
+        }
+    }
+
+    private Set<String> getPermissionsFromRole(AbstractRole role) {
+
+        SortedSet<PermissionWrapper> permissionWrappers = role.getPermissions();
+        Set<String> permissions = permissionWrappers.stream().map(permissionWrapper -> {
+            Permission permission = permissionWrapper.getPermission();
+            return permission.getId();
+        }).collect(Collectors.toSet());
+        return permissions;
+    }
+
+    /**
+     * API method to get the names of all roles that a user is assigned to
+     *
+     * @param sid User id of the Jenkins user
+     * @return Json object containing info on all the roles that the user is assigned to
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public JSONObject doGetAssignedRoles(@QueryParameter(required = true) String sid) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        // Find out how to get all roles
+        AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
+        if (!(strategy instanceof FolderBasedAuthorizationStrategy)) {
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
+        }
+        Set<AgentRole> agentRoles = ((FolderBasedAuthorizationStrategy) strategy).getAgentRoles();
+        Set<FolderRole> folderRoles = ((FolderBasedAuthorizationStrategy) strategy).getFolderRoles();
+        Set<GlobalRole> globalRoles = ((FolderBasedAuthorizationStrategy) strategy).getGlobalRoles();
+
+        Set<String> assignedAgentRoleNames = getAssignedRoleNames(agentRoles, sid);
+        Set<String> assignedFolderRoleNames = getAssignedRoleNames(folderRoles, sid);
+        Set<String> assignedGlobalRoleNames = getAssignedRoleNames(globalRoles, sid);
+
+        // Writing output
+        JSONObject responseJson = new JSONObject();
+        responseJson.put("agentRoles", assignedAgentRoleNames);
+        responseJson.put("folderRoles", assignedFolderRoleNames);
+        responseJson.put("globalRoles", assignedGlobalRoleNames);
+        return responseJson;
+    }
+
+    /**
+     * Util method that gets the names of the roles that a user is assigned to
+     *
+     * @param roles The set of roles that are available on the Jenkins controller
+     * @param sid User id of the Jenkins user
+     * @return The names of the roles that the user is assigned to
+     */
+    private Set<String> getAssignedRoleNames(Set<? extends AbstractRole> roles, String sid) {
+        return roles.stream()
+                .filter(role -> {
+                    Set<String> sids = role.getSids();
+                    return sids.contains(sid);
+                }).map(AbstractRole::getName)
+                .collect(Collectors.toSet());
     }
 }

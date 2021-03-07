@@ -20,7 +20,7 @@
                     ${%currentGlobalRoles}
                 </h2>
                 <div>
-                    <input type="text" placeholder="${%filterPlaceholder}" class="filter" id="globalRoleFilter"/>
+                    <input type="text" placeholder="${%filterPlaceholder}" class="filter" id="globalRoleFilter" onchange="doFilter('global')"/>
                     <div class="role-container" id="globalRoleContainer">
                         <j:forEach items="${it.globalRoles}" var="globalRole" indexVar="index">
                             <div class="role" roleName="${globalRole.name}">
@@ -107,7 +107,7 @@
                         ${%currentFolderRoles}
                     </h2>
                     <div>
-                        <input class="filter" type="text" id="folderRoleFilter" placeholder="${%filterPlaceholder}"/>
+                        <input class="filter" type="text" id="folderRoleFilter" placeholder="${%filterPlaceholder}" onchange="doFilter('folder')"/>
                         <div class="role-container" id="folderRoleContainer">
                             <j:forEach items="${folderRoles}" var="folderRole" indexVar="index">
                                 <div class="role" roleName="${folderRole.name}">
@@ -217,7 +217,7 @@
                         ${%currentAgentRoles}
                     </h2>
                     <div>
-                        <input class="filter" type="text" id="agentRoleFilter" placeholder="${%filterPlaceholder}"/>
+                        <input class="filter" type="text" id="agentRoleFilter" placeholder="${%filterPlaceholder}" onchange="doFilter('agent')"/>
                         <div class="role-container" id="agentRoleContainer">
                             <j:forEach items="${it.agentRoles}" var="agentRole" indexVar="index">
                                 <div class="role" roleName="${agentRole.name}">

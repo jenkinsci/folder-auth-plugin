@@ -1,18 +1,21 @@
 package io.jenkins.plugins.folderauth;
 
 import hudson.security.AuthorizationStrategy;
+import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collector;
 
 /**
  * Public-facing methods for modifying {@link FolderBasedAuthorizationStrategy}.
@@ -302,4 +305,69 @@ public class FolderAuthorizationStrategyAPI {
             return new FolderBasedAuthorizationStrategy(strategy.getGlobalRoles(), strategy.getFolderRoles(), agentRoles);
         });
     }
+
+    /**
+     * Gets an {@link AgentRole}
+     * @param name Name of the agent role
+     * @return The {@link AgentRole} object
+     */
+    @Nullable
+    public static AgentRole getAgentRole(String name) {
+        return (AgentRole) getRole(name, "agentRole");
+    }
+
+    /**
+     * Gets an {@link FolderRole} and all its associated information
+     * @param name Name of the global role
+     * @return The {@link FolderRole} object
+     */
+    @Nullable
+    public static FolderRole getFolderRole(String name) {
+        return (FolderRole) getRole(name, "folderRole");
+    }
+
+    /**
+     * Gets an {@link GlobalRole} and all its associated information
+     * @param name Name of the global role
+     * @return The {@link GlobalRole} object
+     */
+    @Nullable
+    public static GlobalRole getGlobalRole(String name) {
+        return (GlobalRole) getRole(name, "globalRole");
+    }
+
+    /**
+     * Gets a role
+     * @param name Name of the role
+     * @param roleType Type of the role - one of agentRole, folderRole or globalRole
+     * @return The role object
+     */
+    public static AbstractRole getRole(String name, String roleType) {
+        Jenkins jenkins = Jenkins.get();
+        FolderBasedAuthorizationStrategy strategy;
+        try {
+            strategy = (FolderBasedAuthorizationStrategy) jenkins.getAuthorizationStrategy();
+        } catch (ClassCastException error) {
+            throw new IllegalStateException(Messages.FolderBasedAuthorizationStrategy_NotCurrentStrategy());
+        }
+        Set<? extends AbstractRole> roles;
+        switch (roleType) {
+            case "agentRole":
+                roles = new HashSet<>(strategy.getAgentRoles());
+                break;
+            case "folderRole":
+                roles = new HashSet<>(strategy.getFolderRoles());
+                break;
+            case "globalRole":
+                roles = new HashSet<>(strategy.getGlobalRoles());
+                break;
+            default:
+                throw new IllegalArgumentException("Expected agentRole, folderRole or globalRole but received: "
+                        + roleType);
+        }
+        Optional<? extends AbstractRole> found = roles.stream().filter(r -> r.getName().equals(name)).findAny();
+        return found.orElse(null);
+    }
+
+
 }
