@@ -84,6 +84,8 @@ See [GitHub Releases](https://github.com/jenkinsci/folder-auth-plugin/releases)
 | Lockable Resources/Unlock  | Global/Folder Role | "This permission grants the ability to manually unlock resources that have been locked by builds."                                                                                                                                                                                                                                             |
 | Lockable Resources/View    | Global/Folder Role | "This permission grants the ability to view lockable resources."
 
-### Role Type Description 
-Global Role - Role attribute available in Global Role Section
-Folder Role - Role attribute available in Folder Role Section
+### Role Type Description
+
+**Global Role** - Role attribute available in _Global Role Section_
+
+**Folder Role** - Role attribute available in _Folder Role Section_
