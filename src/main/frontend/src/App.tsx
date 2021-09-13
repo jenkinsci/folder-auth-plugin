@@ -38,7 +38,7 @@ const App: FunctionComponent = () => {
       </Tab>
       <Tab eventKey={RoleType.FOLDER} title='Folder Roles' tabClassName='tab'>
         Hello world - Folder Roles <br/>
-        {authorizationStrategy && JSON.stringify(authorizationStrategy)}
+        {authorizationStrategy && <pre>{JSON.stringify(authorizationStrategy, null, 2)}</pre>}
       </Tab>
       <Tab eventKey={RoleType.AGENT} title='Agent Roles' tabClassName='tab'>
         Hello world - Agent Roles

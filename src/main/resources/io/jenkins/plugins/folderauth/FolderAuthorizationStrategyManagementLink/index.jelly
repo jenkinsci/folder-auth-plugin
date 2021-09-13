@@ -3,6 +3,14 @@
     <l:layout permission="${app.ADMINISTER}" norefresh="true" title="${%title}" nogrid="true">
         <st:include it="${app}" page="sidepanel.jelly" optional="true"/>
         <l:main-panel>
+            <noscript>
+                <p>
+                    This plugin requires JavaScript to manage configuration from a browser. Please enable JavaScript
+                     or configure the plugin using Jenkins Configuration as Code as described
+                     <a href="https://github.com/jenkinsci/folder-auth-plugin/blob/master/docs/usage.md#jenkins-configuration-as-code-support">
+                    here</a>.
+                </p>
+            </noscript>
             <div id="root"/>
             <script src="${rootURL}/plugin/folder-auth/js/folder-auth-bundle.js"/>
         </l:main-panel>
