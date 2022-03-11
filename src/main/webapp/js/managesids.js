@@ -4,17 +4,16 @@
  * Assign a sid to a role.
  *
  * @param roleType {('agent' | 'global' | 'folder')} the type of the role
- * @param roleName the name of the role
- * @param sidInputBoxId id of the <input type="text"> that contains the sid
+ * @param index index of the role in its parent container
  */
-function assignSid(roleType, roleName, sidInputBoxId) {
-    const formData = new FormData();
-    formData.append('sid', document.getElementById(sidInputBoxId).value);
-    formData.append('roleName', roleName);
-
-    if (!(roleType === 'agent' || roleType === 'global' || roleType === 'folder')) {
+function assignSid(roleType, index) {
+    if (!['agent', 'global', 'folder'].includes(roleType)) {
         throw  new Error('Unknown Role Type');
     }
+
+    const formData = new FormData();
+    formData.append('sid', document.getElementById(`assign-sid-${roleType}-${index}`).value);
+    formData.append('roleName', document.getElementById(`${roleType}RoleContainer`).children[index].getAttribute('data-role-name'));
 
     const url = `${rootURL}/folder-auth/assignSidTo${roleType[0].toUpperCase()}${roleType.substring(1)}Role`;
     const request = new XMLHttpRequest();
@@ -24,7 +23,7 @@ function assignSid(roleType, roleName, sidInputBoxId) {
             alert('Sid added successfully.');
             location.reload();
         } else {
-            alert('Unable to remove the sid.' + request.responseText);
+            alert('Unable to assign sid to the role.' + request.responseText);
         }
 
     };
@@ -42,17 +41,16 @@ function assignSid(roleType, roleName, sidInputBoxId) {
  * Removes a sid from a role.
  *
  * @param roleType {('agent' | 'global' | 'folder')} the type of the role
- * @param roleName the name of the role
- * @param sidInputBoxId id of the <input type="text"> that contains the sid
+ * @param index index of the role in its parent container
  */
-function removeSid(roleType, roleName, sidInputBoxId) {
-    const formData = new FormData();
-    formData.append('sid', document.getElementById(sidInputBoxId).value);
-    formData.append('roleName', roleName);
-
-    if (!(roleType === 'agent' || roleType === 'global' || roleType === 'folder')) {
+function removeSid(roleType, index) {
+    if (!['agent', 'global', 'folder'].includes(roleType)) {
         throw  new Error('Unknown Role Type');
     }
+
+    const formData = new FormData();
+    formData.append('sid', document.getElementById(`assign-sid-${roleType}-${index}`).value);
+    formData.append('roleName', document.getElementById(`${roleType}RoleContainer`).children[index].getAttribute('data-role-name'));
 
     const url = `${rootURL}/folder-auth/removeSidFrom${roleType[0].toUpperCase()}${roleType.substring(1)}Role`;
     const request = new XMLHttpRequest();

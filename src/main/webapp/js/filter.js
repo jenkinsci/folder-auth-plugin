@@ -24,7 +24,7 @@
 
         for (let i = 0; i < container.childNodes.length; i++) {
             const element = container.childNodes[i];
-            if (element.getAttribute('roleName').includes(str)) {
+            if (element.getAttribute('data-role-name').includes(str)) {
                 element.style.display = 'flex';
                 matching++;
             } else {
