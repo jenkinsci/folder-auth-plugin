@@ -7,6 +7,7 @@ import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import static io.jenkins.plugins.folderauth.misc.PermissionWrapper.wrapPermissions;
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 
@@ -65,6 +67,7 @@ public class FolderBasedAuthorizationStrategyTest {
                 ImmutableSet.of("root")));
         FolderAuthorizationStrategyAPI.assignSidToFolderRole("user1", "folderRole1");
         FolderAuthorizationStrategyAPI.assignSidToFolderRole("user2", "folderRole1");
+        FolderAuthorizationStrategyAPI.assignSidToFolderRole("anonymous", "folderRole1");
 
         FolderAuthorizationStrategyAPI.addFolderRole(new FolderRole("folderRole2", wrapPermissions(Item.CONFIGURE, Item.DELETE),
                 ImmutableSet.of("root/child1")));
@@ -93,6 +96,7 @@ public class FolderBasedAuthorizationStrategyTest {
         admin = User.getById("admin", true);
         user1 = User.getById("user1", true);
         user2 = User.getById("user2", true);
+        user2.setFullName("Test User2");
     }
 
     @Test
@@ -125,6 +129,21 @@ public class FolderBasedAuthorizationStrategyTest {
             assertTrue(child1.hasPermission(Item.READ));
             assertTrue(job2.hasPermission(Item.CONFIGURE));
             assertFalse(job1.hasPermission(Item.CONFIGURE));
+        }
+    }
+
+    @Test
+    public void SIDToFullNameLookupTest() {
+        Jenkins jenkins = jenkinsRule.jenkins;
+
+        AuthorizationStrategy strategy = jenkins.getAuthorizationStrategy();
+        if (strategy instanceof FolderBasedAuthorizationStrategy) {
+            FolderBasedAuthorizationStrategy actualStrategy = (FolderBasedAuthorizationStrategy) strategy;
+            for (FolderRole role: actualStrategy.getFolderRoles()) {
+              if (role.getName().equals("folderRole1")) {
+                  assertEquals("anonymous, user1(user1), user2(Test User2)",role.getSidsCommaSeparated());
+              }
+            }
         }
     }
 }
