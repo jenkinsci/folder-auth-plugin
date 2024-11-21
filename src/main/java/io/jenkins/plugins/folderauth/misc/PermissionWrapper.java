@@ -1,16 +1,10 @@
 package io.jenkins.plugins.folderauth.misc;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.PluginManager;
 import hudson.security.Permission;
 import io.jenkins.plugins.folderauth.Messages;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
-import jenkins.model.Jenkins;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +12,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.ParametersAreNonnullByDefault;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * A wrapper for efficient serialization of a {@link Permission}
@@ -58,7 +57,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
      *
      * @return the {@link PermissionWrapper}
      */
-    @Nonnull
+    @NonNull
     @SuppressWarnings("unused")
     private Object readResolve() {
         permission = PermissionFinder.findPermission(id);
@@ -71,7 +70,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
      *
      * @return the permission corresponding to this {@link PermissionWrapper}
      */
-    @Nonnull
+    @NonNull
     public Permission getPermission() {
         return permission;
     }
@@ -109,7 +108,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
      * @param permissions permissions to be wrapped up
      * @return a set containing a {@link PermissionWrapper} for each permission in {@code permissions}
      */
-    @Nonnull
+    @NonNull
     public static Set<PermissionWrapper> wrapPermissions(Permission... permissions) {
         return _wrapPermissions(Arrays.stream(permissions));
     }
@@ -120,12 +119,12 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
      * @param permissions permissions to be wrapped up
      * @return a set containing a {@link PermissionWrapper} for each permission in {@code permissions}
      */
-    @Nonnull
+    @NonNull
     public static Set<PermissionWrapper> wrapPermissions(Collection<Permission> permissions) {
         return _wrapPermissions(permissions.stream());
     }
 
-    @Nonnull
+    @NonNull
     private static Set<PermissionWrapper> _wrapPermissions(Stream<Permission> stream) {
         return stream
                 .map(Permission::getId)
@@ -134,7 +133,7 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     }
 
     @Override
-    public int compareTo(@Nonnull PermissionWrapper other) {
+    public int compareTo(@NonNull PermissionWrapper other) {
         return Permission.ID_COMPARATOR.compare(this.permission, other.permission);
     }
 }

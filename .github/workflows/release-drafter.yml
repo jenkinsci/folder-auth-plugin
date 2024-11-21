@@ -1,5 +1,6 @@
-# Note: additional setup is required, see https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
-
+# Automates creation of Release Drafts using Release Drafter
+# More Info: https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
+---
 name: Release Drafter
 
 on:
@@ -12,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into the default branch
-      - uses: release-drafter/release-drafter@v5
+      - uses: release-drafter/release-drafter@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

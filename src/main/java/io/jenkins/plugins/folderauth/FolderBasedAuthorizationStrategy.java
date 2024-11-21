@@ -2,6 +2,8 @@ package io.jenkins.plugins.folderauth;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Computer;
@@ -19,15 +21,6 @@ import io.jenkins.plugins.folderauth.roles.AbstractRole;
 import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.acegisecurity.acls.sid.PrincipalSid;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,6 +28,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.ParametersAreNonnullByDefault;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.acegisecurity.acls.sid.PrincipalSid;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * An {@link AuthorizationStrategy} that controls access to {@link com.cloudbees.hudson.plugins.folder.AbstractFolder}s
@@ -116,7 +115,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return an {@link ACL} formed using just globalRoles
      */
-    @Nonnull
+    @NonNull
     @Override
     public GlobalAclImpl getRootACL() {
         return globalAcl;
@@ -127,7 +126,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return {@code this}
      */
-    @Nonnull
+    @NonNull
     @SuppressWarnings("unused")
     private FolderBasedAuthorizationStrategy readResolve() {
         init();
@@ -139,7 +138,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return the {@link ACL} for the {@link Job}
      */
-    @Nonnull
+    @NonNull
     @Override
     public SidACL getACL(Job<?, ?> project) {
         return getACL((AbstractItem) project);
@@ -148,7 +147,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NonNull
     @Override
     public SidACL getACL(AbstractItem item) {
         String fullName = item.getFullName();
@@ -179,9 +178,9 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NonNull
     @Override
-    public SidACL getACL(@Nonnull Computer computer) {
+    public SidACL getACL(@NonNull Computer computer) {
         String name = computer.getName();
         SidACL acl = agentAcls.get(name);
         if (acl == null) {
@@ -195,7 +194,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NonNull
     @Override
     public Collection<String> getGroups() {
         Set<String> groups = ConcurrentHashMap.newKeySet();
@@ -210,7 +209,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return set of {@link GlobalRole}s on which this {@link AuthorizationStrategy} works.
      */
-    @Nonnull
+    @NonNull
     public Set<GlobalRole> getGlobalRoles() {
         return Collections.unmodifiableSet(globalRoles);
     }
@@ -220,7 +219,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return set of {@link AgentRole}s on which this {@link AuthorizationStrategy} works.
      */
-    @Nonnull
+    @NonNull
     public Set<AgentRole> getAgentRoles() {
         return Collections.unmodifiableSet(agentRoles);
     }
@@ -230,7 +229,7 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
      *
      * @return {@link FolderRole}s on which this {@link AuthorizationStrategy} works
      */
-    @Nonnull
+    @NonNull
     public Set<FolderRole> getFolderRoles() {
         return Collections.unmodifiableSet(folderRoles);
     }
@@ -295,15 +294,15 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
 
     @Extension
     public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FolderBasedAuthorizationStrategy_DisplayName();
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public FolderBasedAuthorizationStrategy newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) {
+        public FolderBasedAuthorizationStrategy newInstance(@Nullable StaplerRequest2 req, @NonNull JSONObject formData) {
             AuthorizationStrategy strategy = Jenkins.get().getAuthorizationStrategy();
             if (strategy instanceof FolderBasedAuthorizationStrategy) {
                 // this action was invoked from the 'Configure Global Security' page when the
