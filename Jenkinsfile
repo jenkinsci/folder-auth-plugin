@@ -5,4 +5,3 @@ buildPlugin(
     [platform: 'linux', jdk: 21],
     [platform: 'windows', jdk: 17],
 ])
-runBenchmarks('jmh-report.json')
