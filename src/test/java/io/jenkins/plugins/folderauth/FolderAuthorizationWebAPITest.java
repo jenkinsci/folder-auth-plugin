@@ -1,21 +1,12 @@
 package io.jenkins.plugins.folderauth;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import static org.junit.Assert.*;
+
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.AuthorizationStrategy;
 import io.jenkins.plugins.folderauth.roles.AbstractRole;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -23,8 +14,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.Assert.*;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.util.NameValuePair;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Test for {@link FolderAuthorizationStrategyManagementLink}
@@ -42,7 +42,7 @@ public class FolderAuthorizationWebAPITest {
         jenkinsRule.jenkins.setSecurityRealm(jenkinsRule.createDummySecurityRealm());
         jenkinsRule.jenkins.setCrumbIssuer(null);
         FolderBasedAuthorizationStrategy strategy = new FolderBasedAuthorizationStrategy.DescriptorImpl()
-                .newInstance(null, new JSONObject(true));
+                .newInstance((StaplerRequest2) null, new JSONObject(true));
         jenkinsRule.jenkins.setAuthorizationStrategy(strategy);
 
         FolderAuthorizationStrategyManagementLink folderAuthorizationStrategyManagementLink = FolderAuthorizationStrategyManagementLink.all()

@@ -1,16 +1,15 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A role as an immutable object
@@ -18,26 +17,26 @@ import java.util.TreeSet;
 @Restricted(NoExternalUse.class)
 public abstract class AbstractRole implements Comparable<AbstractRole> {
     @Override
-    public int compareTo(@Nonnull AbstractRole other) {
+    public int compareTo(@NonNull AbstractRole other) {
         return this.name.compareTo(other.name);
     }
 
     /**
      * The unique name of the role.
      */
-    @Nonnull
+    @NonNull
     protected final String name;
 
     /**
      * Wrappers of permissions that are assigned to this role. Should not be modified.
      */
-    @Nonnull
+    @NonNull
     private final Set<PermissionWrapper> permissionWrappers;
 
     /**
      * The sids on which this role is applicable.
      */
-    @Nonnull
+    @NonNull
     protected final Set<String> sids;
 
     AbstractRole(String name, Set<PermissionWrapper> permissions, Set<String> sids) {
@@ -66,7 +65,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      *
      * @return the name of the role
      */
-    @Nonnull
+    @NonNull
     public String getName() {
         return name;
     }
@@ -79,7 +78,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      * @return the permissions assigned to the role.
      * @see AbstractRole#getPermissionsUnsorted() when the permissions are not needed in a sorted order.
      */
-    @Nonnull
+    @NonNull
     public SortedSet<PermissionWrapper> getPermissions() {
         return Collections.unmodifiableSortedSet(new TreeSet<>(permissionWrappers));
     }
@@ -90,7 +89,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      * @return permissions in an unsorted order.
      * @see AbstractRole#getPermissions() when permissions are needed in a sorted order.
      */
-    @Nonnull
+    @NonNull
     public Set<PermissionWrapper> getPermissionsUnsorted() {
         return Collections.unmodifiableSet(permissionWrappers);
     }
@@ -100,7 +99,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      *
      * @return list of sids on which this role is applicable.
      */
-    @Nonnull
+    @NonNull
     public Set<String> getSids() {
         return Collections.unmodifiableSet(sids);
     }
@@ -110,7 +109,7 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
      *
      * @return a sorted comma separated list of sids assigned to this role
      */
-    @Nonnull
+    @NonNull
     @SuppressWarnings("unused") // used by index.jelly
     public String getSidsCommaSeparated() {
         String string = new TreeSet<>(sids).toString();

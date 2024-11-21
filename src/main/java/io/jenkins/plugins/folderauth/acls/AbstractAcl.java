@@ -1,18 +1,17 @@
 package io.jenkins.plugins.folderauth.acls;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.Permission;
 import hudson.security.SidACL;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
-import jenkins.model.Jenkins;
-import org.acegisecurity.acls.sid.Sid;
-import org.apache.commons.collections.CollectionUtils;
-
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import jenkins.model.Jenkins;
+import org.acegisecurity.acls.sid.Sid;
+import org.apache.commons.collections.CollectionUtils;
 
 abstract class AbstractAcl extends SidACL {
 

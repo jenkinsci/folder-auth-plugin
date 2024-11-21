@@ -1,6 +1,8 @@
 package io.jenkins.plugins.folderauth;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Api;
@@ -23,21 +25,7 @@ import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.json.JsonBody;
-import org.kohsuke.stapler.verb.GET;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -48,6 +36,17 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.ParametersAreNonnullByDefault;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.json.JsonBody;
+import org.kohsuke.stapler.verb.GET;
 
 @Extension
 @ExportedBean
@@ -65,7 +64,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NonNull
     @Override
     public String getDescription() {
         return Messages.FolderBasedAuthorizationStrategy_Description();
@@ -96,7 +95,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         return "SECURITY";
     }
 
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getGlobalPermissions() {
@@ -105,7 +104,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         return getSafePermissions(groups);
     }
 
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getFolderPermissions() {
@@ -116,7 +115,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         return getSafePermissions(groups);
     }
 
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public Set<Permission> getAgentPermissions() {
@@ -245,13 +244,13 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      */
     private void redirect() {
         try {
-            Stapler.getCurrentResponse().forwardToPreviousPage(Stapler.getCurrentRequest());
+            Stapler.getCurrentResponse2().forwardToPreviousPage(Stapler.getCurrentRequest2());
         } catch (ServletException | IOException e) {
             LOGGER.log(Level.WARNING, "Unable to redirect to previous page.");
         }
     }
 
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public SortedSet<GlobalRole> getGlobalRoles() {
@@ -269,7 +268,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      * @return full names of all {@link AbstractFolder}s in the system
      */
     @GET
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     public JSONArray doGetAllFolders() {
         Jenkins jenkins = Jenkins.get();
@@ -288,7 +287,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      *
      * @return all Computers in the system
      */
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public List<Computer> getAllComputers() {
@@ -310,7 +309,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
      * @throws IllegalStateException when {@link Jenkins#getAuthorizationStrategy()} is
      *                               not {@link FolderBasedAuthorizationStrategy}
      */
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public SortedSet<FolderRole> getFolderRoles() {
@@ -322,7 +321,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         }
     }
 
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // used by index.jelly
     public SortedSet<AgentRole> getAgentRoles() {
@@ -383,7 +382,7 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
         redirect();
     }
 
-    @Nonnull
+    @NonNull
     static Set<Permission> getSafePermissions(Set<PermissionGroup> groups) {
         TreeSet<Permission> safePermissions = new TreeSet<>(Permission.ID_COMPARATOR);
         groups.stream().map(PermissionGroup::getPermissions).forEach(safePermissions::addAll);

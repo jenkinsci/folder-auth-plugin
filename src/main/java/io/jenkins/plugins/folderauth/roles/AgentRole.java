@@ -1,14 +1,13 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 @ParametersAreNonnullByDefault
 public class AgentRole extends AbstractRole {
@@ -24,7 +23,7 @@ public class AgentRole extends AbstractRole {
         this(name, permissions, agents, Collections.emptySet());
     }
 
-    @Nonnull
+    @NonNull
     public Set<String> getAgents() {
         return Collections.unmodifiableSet(agents);
     }
@@ -34,7 +33,7 @@ public class AgentRole extends AbstractRole {
      *
      * @return sorted agent names as a comma separated string list
      */
-    @Nonnull
+    @NonNull
     @SuppressWarnings("unused") // used in index.jelly
     public String getAgentNamesCommaSeparated() {
         String csv = new TreeSet<>(agents).toString();

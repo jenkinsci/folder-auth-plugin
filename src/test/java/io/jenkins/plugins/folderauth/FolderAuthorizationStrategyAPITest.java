@@ -1,5 +1,13 @@
 package io.jenkins.plugins.folderauth;
 
+import static io.jenkins.plugins.folderauth.misc.PermissionWrapper.wrapPermissions;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.security.AuthorizationStrategy;
@@ -13,15 +21,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static io.jenkins.plugins.folderauth.misc.PermissionWrapper.wrapPermissions;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class FolderAuthorizationStrategyAPITest {
 
@@ -32,7 +32,7 @@ public class FolderAuthorizationStrategyAPITest {
     public void setUp() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         FolderBasedAuthorizationStrategy strategy = new FolderBasedAuthorizationStrategy.DescriptorImpl()
-                                                        .newInstance(null, new JSONObject(true));
+                                                        .newInstance((StaplerRequest2) null, new JSONObject(true));
         // should only create the admin global role
         assertEquals(1, strategy.getGlobalRoles().size());
         assertEquals(0, strategy.getFolderRoles().size());
