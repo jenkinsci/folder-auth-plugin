@@ -107,14 +107,5 @@ const sendPostRequest = (postUrl, json) => {
         }
     };
 
-    // this is really bad.
-    // See https://github.com/jenkinsci/jenkins/blob/75468da366c1d257a51655dcbe952d55b8aeeb9c/war/src/main/js/util/jenkins.js#L22
-    const oldPrototype = Array.prototype.toJSON;
-    delete Array.prototype.toJSON;
-
-    try {
-        xhr.send(JSON.stringify(json));
-    } finally {
-        Array.prototype.toJSON = oldPrototype;
-    }
+    xhr.send(JSON.stringify(json));
 };
