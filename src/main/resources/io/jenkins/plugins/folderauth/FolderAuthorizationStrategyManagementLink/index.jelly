@@ -35,10 +35,10 @@
                                         <input id="assign-sid-global-${index}" type="text"/>
                                     </div>
                                     <div class="center" style="margin-top: 5px">
-                                        <button type="button" class="submit-button" onclick="assignSid('global', ${index})">
+                                        <button type="button" class="sid-action-button submit-button" data-action="assignSid" data-index="${index}" data-role-type="global">
                                             ${%assign}
                                         </button>
-                                        <button type="button" class="submit-button" onclick="removeSid('global', ${index})">
+                                        <button type="button" class="sid-action-button submit-button" data-action="removeSid" data-index="${index}" data-role-type="global">
                                             ${%remove}
                                         </button>
                                     </div>
@@ -53,8 +53,8 @@
                                         </j:forEach>
                                     </ul>
                                 </div>
-                                <form method="POST" action="${rootURL}/${it.urlName}/deleteGlobalRole"
-                                      onsubmit="return confirm('${%confirmDelete}');">
+                                <form method="POST" action="${rootURL}/${it.urlName}/deleteGlobalRole" class="delete-role-form"
+                                      data-confirm-delete-text="${%confirmDelete}">
                                     <input type="hidden" name="roleName" value="${globalRole.name}"/>
                                     <input type="submit" value="X" class="delete-role"/>
                                 </form>
@@ -82,7 +82,7 @@
                             </option>
                         </j:forEach>
                     </select>
-                    <button type="button" onclick="addGlobalRole();" class="submit-button">
+                    <button type="button" data-action="addGlobalRole" class="add-role-button submit-button">
                         ${%addRole}
                     </button>
                 </div>
@@ -123,10 +123,10 @@
                                             <input id="assign-sid-folder-${index}" type="text" name="sid"/>
                                         </div>
                                         <div class="center" style="margin-top: 5px;">
-                                            <button type="button" class="submit-button" onclick="assignSid('folder', ${index})">
+                                            <button type="button" class="sid-action-button submit-button" data-action="assignSid" data-index="${index}" data-role-type="folder">
                                                 ${%assign}
                                             </button>
-                                            <button type="button" class="submit-button" onclick="removeSid('folder', ${index})">
+                                            <button type="button" class="sid-action-button submit-button" data-action="removeSid" data-index="${index}" data-role-type="folder">
                                                 ${%remove}
                                             </button>
                                         </div>
@@ -141,8 +141,8 @@
                                             </j:forEach>
                                         </ul>
                                     </div>
-                                    <form method="POST" action="${rootURL}/${it.urlName}/deleteFolderRole"
-                                          onsubmit="return confirm('${%confirmDelete}');">
+                                    <form method="POST" action="${rootURL}/${it.urlName}/deleteFolderRole" class="delete-role-form"
+                                          data-confirm-delete-text="${%confirmDelete}">
                                         <input type="hidden" name="roleName" value="${folderRole.name}"/>
                                         <input type="submit" value="X" class="delete-role"/>
                                     </form>
@@ -163,10 +163,6 @@
                         </label>
                     </div>
                     <div class="form-row">
-                        <script>
-                            // asynchronously render folder names
-                            getFolders();
-                        </script>
                         <label class="form-label" for="folder-select">
                             ${%applyOn}:
                         </label>
@@ -188,8 +184,8 @@
                         </j:forEach>
                     </select>
                     <div class="form-row">
-                        <button id="add-folder-role-button" type="button" class="submit-button"
-                                onclick="addFolderRole();" disabled="disabled">
+                        <button id="add-folder-role-button" type="button" class="add-role-button submit-button"
+                                data-action="addFolderRole" disabled="disabled">
                             ${%addRole}
                         </button>
                     </div>
@@ -231,10 +227,10 @@
                                             <input id="assign-sid-agent-${index}" type="text"/>
                                         </div>
                                         <div class="center" style="margin-top: 10px;">
-                                            <button type="button" class="submit-button" onclick="assignSid('agent', ${index})">
+                                            <button type="button" class="sid-action-button submit-button" data-action="assignSid" data-index="${index}" data-role-type="agent">
                                                 ${%assign}
                                             </button>
-                                            <button type="button" class="submit-button" onclick="removeSid('agent', ${index})">
+                                            <button type="button" class="sid-action-button submit-button" data-action="removeSid" data-index="${index}" data-role-type="agent">
                                                 ${%remove}
                                             </button>
                                         </div>
@@ -249,8 +245,8 @@
                                             </j:forEach>
                                         </ul>
                                     </div>
-                                    <form method="POST" action="${rootURL}/${it.urlName}/deleteAgentRole"
-                                          onsubmit="return confirm('${%confirmDelete}');">
+                                    <form method="POST" action="${rootURL}/${it.urlName}/deleteAgentRole" class="delete-role-form"
+                                          data-confirm-delete-text="${%confirmDelete}">
                                         <input type="hidden" name="roleName" value="${agentRole.name}"/>
                                         <input type="submit" value="X" class="delete-role"/>
                                     </form>
@@ -291,7 +287,7 @@
                         </j:forEach>
                     </select>
                     <div class="form-row">
-                        <button type="button" class="submit-button" onclick="addAgentRole();">${%addRole}</button>
+                        <button type="button" class="add-role-button submit-button" data-action="addAgentRole">${%addRole}</button>
                     </div>
                 </div>
             </div>

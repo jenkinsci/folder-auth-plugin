@@ -4,7 +4,7 @@
 /**
  * Adds a global role
  */
-const addGlobalRole = () => {
+function addGlobalRole() {
     const roleName = document.getElementById('globalRoleName').value;
     if (!roleName || roleName.length < 3) {
         alert('Please enter a valid name for the role to be added.');
@@ -13,7 +13,9 @@ const addGlobalRole = () => {
 
     const response = {
         name: roleName,
-        permissions: document.getElementById('global-permission-select').getValue(),
+        permissions: Array.from(document.getElementById('global-permission-select').options)
+            .filter(option => option.selected)
+            .map(option => option.value)
     };
 
     if (response.permissions.length <= 0) {
@@ -28,7 +30,7 @@ const addGlobalRole = () => {
 /**
  * Adds a Folder Role
  */
-const addFolderRole = () => {
+function addFolderRole() {
     const roleName = document.getElementById('folderRoleName').value;
     if (!roleName || roleName.length < 3) {
         alert('Please enter a valid name for the role to be added');
@@ -37,8 +39,12 @@ const addFolderRole = () => {
 
     const response = {
         name: roleName,
-        permissions: document.getElementById('folder-permission-select').getValue(),
-        folderNames: document.getElementById('folder-select').getValue(),
+        permissions: Array.from(document.getElementById('folder-permission-select').options)
+            .filter(option => option.selected)
+            .map(option => option.value),
+        folderNames: Array.from(document.getElementById('folder-select').options)
+            .filter(option => option.selected)
+            .map(option => option.value)
     };
 
     if (!response.permissions || response.permissions.length <= 0) {
@@ -58,7 +64,7 @@ const addFolderRole = () => {
 /**
  * Adds an agent Role
  */
-const addAgentRole = () => {
+function addAgentRole() {
     const roleName = document.getElementById('agentRoleName').value;
     if (!roleName || roleName.length < 3) {
         alert('Please enter a valid name for the role to be added');
@@ -67,8 +73,12 @@ const addAgentRole = () => {
 
     const response = {
         name: roleName,
-        agentNames: document.getElementById('agent-select').getValue(),
-        permissions: document.getElementById('agent-permission-select').getValue(),
+        agentNames: Array.from(document.getElementById('agent-select').options)
+            .filter(option => option.selected)
+            .map(option => option.value),
+        permissions: Array.from(document.getElementById('agent-permission-select').options)
+            .filter(option => option.selected)
+            .map(option => option.value)
     };
 
     if (!response.permissions || response.permissions.length <= 0) {
@@ -109,3 +119,21 @@ const sendPostRequest = (postUrl, json) => {
 
     xhr.send(JSON.stringify(json));
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".add-role-button").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const { action } = event.target.dataset;
+
+            window[action]();
+        });
+    });
+
+    document.querySelectorAll(".delete-role-form").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            if (!confirm(event.target.dataset.confirmDeleteText)) {
+                event.preventDefault();
+            }
+        });
+    })
+});
