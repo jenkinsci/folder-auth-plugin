@@ -46,3 +46,7 @@ const renderFoldersAsOptions = (folders) => {
     // enable submitting the form
     document.getElementById('add-folder-role-button').removeAttribute('disabled');
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+    getFolders();
+});

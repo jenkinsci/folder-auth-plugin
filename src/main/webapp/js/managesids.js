@@ -72,3 +72,15 @@ function removeSid(roleType, index) {
     request.setRequestHeader('Jenkins-Crumb', crumb.value);
     request.send(formData);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".sid-action-button").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const data = event.target.dataset;
+            const index = parseInt(data.index);
+            const { roleType, action } = data;
+
+            window[action](roleType, index);
+        });
+    })
+});
