@@ -24,7 +24,10 @@ public class GlobalAclImpl extends AbstractAcl {
         for (GlobalRole role : globalRoles) {
             Set<Permission> impliedPermissions = ConcurrentHashMap.newKeySet();
 
-            role.getPermissionsUnsorted().parallelStream().map(PermissionWrapper::getPermission).forEach(impliedPermissions::add);
+            role.getPermissionsUnsorted().parallelStream()
+                .filter(PermissionWrapper::isValid)
+                .map(PermissionWrapper::getPermission)
+                .forEach(impliedPermissions::add);
 
             role.getSids().parallelStream().forEach(sid -> {
                 Set<Permission> permissionsForSid = permissionList.get(sid);

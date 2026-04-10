@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,6 +26,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 @ParametersAreNonnullByDefault
 public final class PermissionWrapper implements Comparable<PermissionWrapper> {
+    private static final Logger LOGGER = Logger.getLogger(PermissionWrapper.class.getName());
     // should've been final but needs to be setup when the
     // object is deserialized from the XML config
     private transient Permission permission;
@@ -49,6 +52,10 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     }
 
     public String getId() {
+        // If the permission could not be resolved (unknown plugin/disabled), fall back to the raw stored id.
+        if (permission == null) {
+            return id;
+        }
         return String.format("%s/%s", permission.group.getId(), permission.name);
     }
 
@@ -66,13 +73,20 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     }
 
     /**
-     * Get the permission corresponding to this {@link PermissionWrapper}
-     *
-     * @return the permission corresponding to this {@link PermissionWrapper}
+     * Get the permission corresponding to this {@link PermissionWrapper}.
+     * May return {@code null} when the permission ID references a plugin that is not installed
+     * or a permission that could not be resolved.  Callers must handle the {@code null} case.
      */
-    @NonNull
     public Permission getPermission() {
         return permission;
+    }
+
+    /**
+     * Returns {@code true} if this wrapper holds a valid, enabled permission.
+     * Wrappers for which this returns {@code false} should not be used for access-control decisions.
+     */
+    public boolean isValid() {
+        return permission != null && permission.enabled;
     }
 
 
@@ -92,13 +106,36 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
     /**
      * Checks if the permission for this {@link PermissionWrapper} is valid.
      *
-     * @throws IllegalArgumentException when the permission did not exist, was null or was dangerous.
+     * <p>Behaviour by case:
+     * <ul>
+     *   <li><b>Dangerous permissions</b> ({@link #DANGEROUS_PERMISSIONS}) – always rejected with an
+     *       {@link IllegalArgumentException} regardless of context.</li>
+     *   <li><b>Unknown permissions</b> ({@code permission == null}) – a WARNING is logged and the
+     *       wrapper is kept with a {@code null} internal permission.  This allows Jenkins to start up
+     *       even when a referenced permission belongs to a plugin that is not currently installed.</li>
+     *   <li><b>Disabled permissions</b> ({@code !permission.enabled}) – a WARNING is logged.
+     *       SECURITY-3062 compliance is preserved via two mechanisms: the UI filters disabled
+     *       permissions out ({@code getSafePermissions}) and Jenkins core refuses to honour them
+     *       at access-check time ({@code AbstractACL.hasPermission}).</li>
+     * </ul>
      */
     private void checkPermission() {
         if (permission == null) {
-            throw new IllegalArgumentException(Messages.PermissionWrapper_UnknownPermission(id));
+            // Permission from an uninstalled/unavailable plugin – log and continue rather than crashing.
+            LOGGER.log(Level.WARNING,
+                    "Permission ''{0}'' is unknown in this Jenkins installation (plugin may not be installed) "
+                    + "and will have no effect.", id);
         } else if (DANGEROUS_PERMISSIONS.contains(permission)) {
             throw new IllegalArgumentException(Messages.PermissionWrapper_NoDangerousPermissions());
+        } else if (!permission.enabled) {
+            // SECURITY-3062: disabled permissions cannot be granted via the UI (getSafePermissions filters
+            // them out) and Jenkins core itself refuses to honour them at access-check time.  We log a
+            // WARNING here instead of throwing so that existing configurations that reference a permission
+            // which is disabled in the current environment (e.g. Credentials/UseItem, Job/WipeOut) do not
+            // prevent Jenkins from starting up.
+            LOGGER.log(Level.WARNING,
+                    "Permission ''{0}'' is disabled in this Jenkins installation and will have no effect. "
+                    + "Consider removing it from the folder-auth configuration.", id);
         }
     }
 
@@ -134,6 +171,10 @@ public final class PermissionWrapper implements Comparable<PermissionWrapper> {
 
     @Override
     public int compareTo(@NonNull PermissionWrapper other) {
+        // Fall back to string comparison when either permission could not be resolved.
+        if (this.permission == null || other.permission == null) {
+            return this.id.compareTo(other.id);
+        }
         return Permission.ID_COMPARATOR.compare(this.permission, other.permission);
     }
 }

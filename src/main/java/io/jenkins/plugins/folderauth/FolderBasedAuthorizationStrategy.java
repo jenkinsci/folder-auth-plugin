@@ -81,9 +81,10 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
     @DataBoundConstructor
     public FolderBasedAuthorizationStrategy(Set<GlobalRole> globalRoles, Set<FolderRole> folderRoles,
                                             Set<AgentRole> agentRoles) {
-        this.agentRoles = new HashSet<>(agentRoles);
-        this.globalRoles = new HashSet<>(globalRoles);
-        this.folderRoles = new HashSet<>(folderRoles);
+        // Guard against null — JCasC passes null when a parameter is omitted from YAML
+        this.agentRoles  = agentRoles  != null ? new HashSet<>(agentRoles)  : new HashSet<>();
+        this.globalRoles = globalRoles != null ? new HashSet<>(globalRoles) : new HashSet<>();
+        this.folderRoles = folderRoles != null ? new HashSet<>(folderRoles) : new HashSet<>();
 
         // the sets above should NOT be modified. They are not Collections.unmodifiableSet()
         // because that complicates the serialized XML and add unnecessary nesting.
@@ -270,7 +271,10 @@ public class FolderBasedAuthorizationStrategy extends AuthorizationStrategy {
             acl = new GenericAclImpl();
         }
         acl.assignPermissions(role.getSids(),
-            role.getPermissionsUnsorted().stream().map(PermissionWrapper::getPermission).collect(Collectors.toSet()));
+            role.getPermissionsUnsorted().stream()
+                .filter(PermissionWrapper::isValid)
+                .map(PermissionWrapper::getPermission)
+                .collect(Collectors.toSet()));
         acls.put(fullName, acl);
     }
 

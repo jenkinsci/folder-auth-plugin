@@ -386,6 +386,8 @@ public class FolderAuthorizationStrategyManagementLink extends ManagementLink {
     static Set<Permission> getSafePermissions(Set<PermissionGroup> groups) {
         TreeSet<Permission> safePermissions = new TreeSet<>(Permission.ID_COMPARATOR);
         groups.stream().map(PermissionGroup::getPermissions).forEach(safePermissions::addAll);
+        // SECURITY-3062: remove disabled permissions so they cannot be selected in the UI
+        safePermissions.removeIf(p -> !p.enabled);
         safePermissions.removeAll(PermissionWrapper.DANGEROUS_PERMISSIONS);
         return safePermissions;
     }
