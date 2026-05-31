@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import java.util.Collections;
@@ -39,10 +40,10 @@ public abstract class AbstractRole implements Comparable<AbstractRole> {
     @NonNull
     protected final Set<String> sids;
 
-    AbstractRole(String name, Set<PermissionWrapper> permissions, Set<String> sids) {
+    AbstractRole(String name, @CheckForNull Set<PermissionWrapper> permissions, @CheckForNull Set<String> sids) {
         this.name = name;
-        this.permissionWrappers = new HashSet<>(permissions);
-        this.sids = new HashSet<>(sids);
+        this.permissionWrappers = permissions != null ? new HashSet<>(permissions) : new HashSet<>();
+        this.sids = sids != null ? new HashSet<>(sids) : new HashSet<>();
     }
 
     @Override
