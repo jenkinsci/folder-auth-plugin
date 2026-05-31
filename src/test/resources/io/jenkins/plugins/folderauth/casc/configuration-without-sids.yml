@@ -1,0 +1,11 @@
+jenkins:
+    authorizationStrategy:
+        folderBased:
+            folderRoles:
+                - name: "xxx"
+                  folders:
+                      - "xxx"
+                  permissions:
+                      - id: "Job/Build"
+                      - id: "Job/Discover"
+                      - id: "Job/Read"

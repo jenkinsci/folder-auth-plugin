@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import java.util.Collections;
@@ -14,9 +15,9 @@ public class AgentRole extends AbstractRole {
     private final Set<String> agents;
 
     @DataBoundConstructor
-    public AgentRole(String name, Set<PermissionWrapper> permissions, Set<String> agents, Set<String> sids) {
+    public AgentRole(String name, @CheckForNull Set<PermissionWrapper> permissions, @CheckForNull Set<String> agents, @CheckForNull Set<String> sids) {
         super(name, permissions, sids);
-        this.agents = new HashSet<>(agents);
+        this.agents = agents != null ? new HashSet<>(agents) : new HashSet<>();
     }
 
     public AgentRole(String name, Set<PermissionWrapper> permissions, Set<String> agents) {

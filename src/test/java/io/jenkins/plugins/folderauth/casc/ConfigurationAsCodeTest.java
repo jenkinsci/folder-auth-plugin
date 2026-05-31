@@ -13,18 +13,22 @@ import io.jenkins.plugins.casc.ConfiguratorRegistry;
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.model.CNode;
+import io.jenkins.plugins.folderauth.FolderBasedAuthorizationStrategy;
+import io.jenkins.plugins.folderauth.roles.FolderRole;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Objects;
+import java.util.Set;
 
 import static io.jenkins.plugins.casc.misc.Util.getJenkinsRoot;
 import static io.jenkins.plugins.casc.misc.Util.toStringFromYamlFile;
 import static io.jenkins.plugins.casc.misc.Util.toYamlString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -99,5 +103,18 @@ public class ConfigurationAsCodeTest {
         String expected = toStringFromYamlFile(this, "expected3.yml");
 
         assertThat(exported, is(expected));
+    }
+
+    @Test
+    @ConfiguredWithCode("configuration-without-sids.yml")
+    public void shouldLoadConfigurationWithoutSids() {
+
+        FolderBasedAuthorizationStrategy strategy = (FolderBasedAuthorizationStrategy) Jenkins.get().getAuthorizationStrategy();
+        Set<FolderRole> folderRoles = strategy.getFolderRoles();
+
+        assertEquals(1, folderRoles.size());
+        FolderRole role = folderRoles.iterator().next();
+        assertEquals("xxx", role.getName());
+        assertEquals(0, role.getSids().size());
     }
 }

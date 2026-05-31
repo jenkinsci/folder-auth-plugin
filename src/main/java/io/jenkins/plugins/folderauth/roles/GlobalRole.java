@@ -1,5 +1,6 @@
 package io.jenkins.plugins.folderauth.roles;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.folderauth.misc.PermissionWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -11,9 +12,8 @@ import java.util.Set;
  */
 public class GlobalRole extends AbstractRole {
     @DataBoundConstructor
-    public GlobalRole(String name, Set<PermissionWrapper> permissions, Set<String> sids) {
+    public GlobalRole(String name, @CheckForNull Set<PermissionWrapper> permissions, @CheckForNull Set<String> sids) {
         super(name, permissions, sids);
-        this.sids.addAll(sids);
     }
 
     public GlobalRole(String name, Set<PermissionWrapper> permissions) {
