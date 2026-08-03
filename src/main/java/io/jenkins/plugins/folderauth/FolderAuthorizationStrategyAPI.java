@@ -5,7 +5,6 @@ import io.jenkins.plugins.folderauth.roles.AgentRole;
 import io.jenkins.plugins.folderauth.roles.FolderRole;
 import io.jenkins.plugins.folderauth.roles.GlobalRole;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashSet;
@@ -119,7 +118,7 @@ public class FolderAuthorizationStrategyAPI {
      * @throws IllegalArgumentException when the {@code sid} is empty
      */
     public static void assignSidToGlobalRole(String sid, String roleName) {
-        if (StringUtils.isBlank(sid)) {
+        if (sid == null || sid.isBlank()) {
             throw new IllegalArgumentException("Sid should not be blank.");
         }
 
@@ -144,7 +143,7 @@ public class FolderAuthorizationStrategyAPI {
      * @throws IllegalArgumentException when the {@code sid} is empty
      */
     public static void assignSidToAgentRole(String sid, String roleName) {
-        if (StringUtils.isBlank(sid)) {
+        if (sid == null || sid.isBlank()) {
             throw new IllegalArgumentException("Sid should not be blank.");
         }
 
@@ -169,7 +168,7 @@ public class FolderAuthorizationStrategyAPI {
      * @throws IllegalArgumentException when the {@code sid} is empty
      */
     public static void assignSidToFolderRole(String sid, String roleName) {
-        if (StringUtils.isBlank(sid)) {
+        if (sid == null || sid.isBlank()) {
             throw new IllegalArgumentException("Sid should not be blank.");
         }
 
