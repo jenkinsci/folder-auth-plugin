@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import jenkins.model.Jenkins;
 import org.acegisecurity.acls.sid.Sid;
-import org.apache.commons.collections.CollectionUtils;
 
 abstract class AbstractAcl extends SidACL {
 
@@ -65,7 +64,8 @@ abstract class AbstractAcl extends SidACL {
         }
 
         Set<Permission> permissions = permissionList.get(toString(sid));
-        if (permissions != null && CollectionUtils.containsAny(permissions, getImplyingPermissions(permission))) {
+        if (permissions != null && getImplyingPermissions(permission).stream()
+                .anyMatch(p -> p.getEnabled() && permissions.contains(p))) {
             return true;
         }
 
